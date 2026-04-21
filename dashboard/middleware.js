@@ -1,39 +1,46 @@
 import { NextResponse } from 'next/server';
 
 export function middleware(request) {
-  // Only protect the root route or api routes
+  const { pathname } = request.nextUrl;
   const password = process.env.LUSI_ACCESS_PASSWORD;
-  
-  // If no password configured, bypass for local dev
+
+  // 1. If no password is set, allow everything (useful for setup/local dev)
   if (!password) {
     return NextResponse.next();
   }
 
-  // Check cookie
+  // 2. Check for the auth cookie
   const authCookie = request.cookies.get('lusi_auth');
-  
-  const isAuthRoute = request.nextUrl.pathname === '/login';
-  
-  if (authCookie?.value === password) {
-    if (isAuthRoute) {
-      return NextResponse.redirect(new URL('/', request.url));
-    }
-    return NextResponse.next();
+  const isAuthenticated = authCookie?.value === password;
+
+  // 3. Define the login route
+  const isLoginPage = pathname === '/login';
+
+  // 4. Redirect logic
+  if (!isAuthenticated && !isLoginPage) {
+    // Not logged in and not on login page -> Send to login
+    const loginUrl = new URL('/login', request.url);
+    return NextResponse.redirect(loginUrl);
   }
 
-  // Allow API routes to be protected (returns 401)
-  if (request.nextUrl.pathname.startsWith('/api/') && request.nextUrl.pathname !== '/api/auth') {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  // Redirect to login if not authenticated
-  if (!isAuthRoute && !request.nextUrl.pathname.startsWith('/_next') && !request.nextUrl.pathname.startsWith('/api')) {
-    return NextResponse.redirect(new URL('/login', request.url));
+  if (isAuthenticated && isLoginPage) {
+    // Already logged in but trying to go to login -> Send home
+    return NextResponse.redirect(new URL('/', request.url));
   }
 
   return NextResponse.next();
 }
 
+// Ensure the middleware doesn't run on static files or the favicon
 export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     */
+    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+  ],
 };
