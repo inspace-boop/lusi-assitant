@@ -72,10 +72,16 @@ async function fetchConfluenceExcerpts(query, spaces) {
     pinnedUrl.searchParams.append('limit', '5');
     pinnedUrl.searchParams.append('expand', 'space,body.view');
 
-    const [res, pinnedRes] = await Promise.all([
-      fetch(url.toString(), { headers: { 'Authorization': `Basic ${auth}`, 'Accept': 'application/json' } }),
-      fetch(pinnedUrl.toString(), { headers: { 'Authorization': `Basic ${auth}`, 'Accept': 'application/json' } })
-    ]);
+    let res, pinnedRes;
+    try {
+      [res, pinnedRes] = await Promise.all([
+        fetch(url.toString(), { headers: { 'Authorization': `Basic ${auth}`, 'Accept': 'application/json' } }),
+        fetch(pinnedUrl.toString(), { headers: { 'Authorization': `Basic ${auth}`, 'Accept': 'application/json' } })
+      ]);
+    } catch (err) {
+      console.error("Fetch parallel error:", err);
+      return '';
+    }
     
     if (!res.ok) {
       const errText = await res.text();
