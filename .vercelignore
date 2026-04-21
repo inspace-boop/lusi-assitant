@@ -1,0 +1,13 @@
+# Ignore all non-web folders to speed up build
+agent/
+ros2_ws/
+docs/
+
+# Ignore local dev files
+.gitignore
+README.md
+requirements.txt
+
+# Ignore specific large files
+*.pdf
+*.zip

@@ -1,0 +1,8 @@
+# Lehigh Mars Rover AI Agent - Separate Environment
+fastapi
+uvicorn
+python-dotenv
+pytest
+pinecone
+openai
+PyMuPDF
