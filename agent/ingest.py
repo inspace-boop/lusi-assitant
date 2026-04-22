@@ -1,6 +1,7 @@
 import os
 import re
 import shutil
+import csv
 import fitz  # PyMuPDF
 from openai import OpenAI
 from pinecone import Pinecone
@@ -50,39 +51,61 @@ def chunk_rulebook(pdf_path, year):
         })
     return chunks, "urc_rules"
 
-def chunk_generic_pdf(pdf_path, namespace, metadata_base):
-    print(f"  [{namespace.upper()}] Processing: {os.path.basename(pdf_path)}")
-    doc = fitz.open(pdf_path)
+def chunk_generic_file(file_path, namespace, metadata_base):
+    print(f"  [{namespace.upper()}] Processing: {os.path.basename(file_path)}")
+    
+    raw_chunks = []
+    if file_path.lower().endswith('.pdf'):
+        doc = fitz.open(file_path)
+        # Use exact page blocks for PDFs to keep sections together
+        raw_chunks = [page.get_text().strip() for page in doc]
+    elif file_path.lower().endswith('.csv'):
+        # For budgets/BOMs, we treat each row as a record
+        with open(file_path, 'r', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            for i, row in enumerate(reader):
+                # Filter out empty cells to save tokens
+                filled_row = {k: v for k, v in row.items() if v and v.strip()}
+                if filled_row:
+                    row_text = ", ".join([f"[{k}]: {v}" for k, v in filled_row.items()])
+                    raw_chunks.append(row_text)
+    else:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            text = f.read()
+        # Fallback to character chunks for TXT
+        raw_chunks = [text[i:i+2500] for i in range(0, len(text), 2500)]
+
     chunks = []
-    for page_num, page in enumerate(doc):
-        text = page.get_text().strip()
-        if not text or len(text) < 50: continue
+    for i, content in enumerate(raw_chunks):
+        if not content or len(content) < 40: continue
         
         metadata = metadata_base.copy()
         metadata.update({
-            "page": page_num + 1,
-            "text": text
+            "page": i + 1,
+            "text": content
         })
         chunks.append({
-            "text": text,
+            "text": content,
             "metadata": metadata
         })
     return chunks
 
 def process_file(file_path, category):
-    filename = os.path.basename(file_path)
+    filename = os.path.basename(file_path).upper()
     chunks = []
     namespace = ""
 
     if category == "rules":
-        year_match = re.search(r'rules(\d{4})', filename, re.IGNORECASE)
+        year_match = re.search(r'RULES(\d{4})', filename)
         year = int(year_match.group(1)) if year_match else 2026
         chunks, namespace = chunk_rulebook(file_path, year)
     
     elif category == "sar":
-        # Format: TEAM_SAR_YEAR.pdf
-        parts = filename.split('_')
-        team = parts[0] if len(parts) > 0 else "Unknown"
+        # Detect Team, Year, and Report Type (SAR vs PDR)
+        report_type = "SAR" if "SAR" in filename else "PDR" if "PDR" in filename else "Report"
+        parts = filename.replace('.PDF', '').replace('.TXT', '').split('_')
+        
+        team = parts[0] if len(parts) > 0 else "LUSI"
         year = 2026
         for p in parts:
             if re.match(r'\d{4}', p):
@@ -92,15 +115,15 @@ def process_file(file_path, category):
         metadata = {
             "team": team,
             "year": year,
-            "type": "sar_report",
-            "source": f"{team} SAR {year}"
+            "type": f"{report_type.lower()}_report",
+            "source": f"{team} {report_type} {year}"
         }
-        chunks = chunk_generic_pdf(file_path, "sar_reports", metadata)
+        chunks = chunk_generic_file(file_path, "sar_reports", metadata)
         namespace = "sar_reports"
 
     elif category == "drive":
-        # Format: NAME_YEAR_CATEGORY.pdf or just NAME.pdf
-        parts = filename.replace('.pdf', '').split('_')
+        # Format: NAME_YEAR_CATEGORY.pdf or TXT
+        parts = filename.replace('.pdf', '').replace('.txt', '').split('_')
         name = parts[0]
         year = 2026
         cat = "Archive"
@@ -115,7 +138,7 @@ def process_file(file_path, category):
             "type": "google_drive",
             "source": f"Drive: {name}"
         }
-        chunks = chunk_generic_pdf(file_path, "google_drive", metadata)
+        chunks = chunk_generic_file(file_path, "google_drive", metadata)
         namespace = "google_drive"
 
     if not chunks:

@@ -1,0 +1,30 @@
+URC2026 PRELIMINARY DESIGN REVIEW (PDR) REQUIREMENTS
+Due: December 3, 2025
+Format: 5 pages total. Pages 1-2: text and graphics. Pages 3-5: graphics with captions ONLY. Letter size, 1in margins, Calibri 11pt, single spaced. PDF only.
+
+CONTENT:
+1. Team Structure: Leadership, membership, backgrounds, recruiting/training plans, outreach.
+2. Team Resources: Financial/facility resources, project budget (USD), fundraising plan.
+3. Project Management Plan: SDLC approach (plan, design, manufacture, integrate, test). 
+   Required elements: Gantt chart (Sept 2025 - June 2026), knowledge management plan, systems engineering/integration plan, testing/evaluation plan.
+4. Preliminary Technical Design: System architecture (new vs modified vs reused). Technical design for mobility, comms, arm, C2, science payload.
+
+SAR REQUIREMENTS
+Due: February 27, 2026
+Format: 7 pages text/graphics + optional cover. Letter size, 1in margins, Calibri 11pt, single spaced. PDF only.
+Page 5: Gantt chart ONLY.
+Page 6: Project Budget Table ONLY.
+Page 7: Science Plan ONLY.
+
+CONTENT:
+1. System Overview & Architecture (8%): System design, Context, Novel subsystems. Architecture diagrams.
+2. Integration and Testing (6%): Integration status, Test plan (component to operational), Modeling/simulation.
+3. Project Management (11%): Org structure, Jan-May execution, Team training, Outreach.
+4. Gantt Chart (4%): Sept 2025 - May 2026. Task owner, dates, % complete. Critical path identified.
+5. Project Budget Table (4%): Guidance follows URC standard. Max $24,000 for system.
+6. Science Plan (15%): On-board experiments, cache system, instruments.
+
+SAR VIDEO (48% of SAR Score)
+Limit: 5:00. MP4/YouTube. 
+Content: Mobility (8%), Arm/Dexterity (8%), Auto-Nav (6%), Science Payload (6%), Overall Integration (12%), Comms/C2/Ops (8%).
+Judges' Assessment: Readiness, Ruggedness, Novelty/Scope (12%).
