@@ -6,3 +6,4 @@ pytest
 pinecone
 openai
 PyMuPDF
+youtube-transcript-api

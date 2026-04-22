@@ -37,18 +37,25 @@ URC_YEAR=2025
 
 Push the repository to GitHub, and import the `dashboard` folder into Vercel. Be sure to copy all the Environment Variables into the Vercel project settings. Ensure the `Framework Preset` is set to Next.js.
 
-## URC Rulebook Ingestion
+## Data Ingestion
 
-Each season, you must re-ingest the URC rules. We provide a simple python script for this. The script expects the file to be named `rulesYYYY.pdf` and will automatically clean up the database to only store the current year and the previous year.
+The AI agent uses a unified ingestion system located in the `agent/` directory.
 
-1. Rename the downloaded PDF, for example, `agent/rules2026.pdf`.
-2. Ensure you have the `OPENAI_API_KEY` and `PINECONE_API_KEY` environment variables set in `agent/.env`.
-3. Install requirements using an Anaconda prompt: `pip install -r requirements.txt`
-4. Run the python script:
-   `python agent/ingest_rules.py --pdf agent/rules2026.pdf`
+### 1. File-Based Ingestion (Rules, SAR, Drive)
+1. Place PDF files into the correct subfolder in `agent/ingest/`:
+   - `rules/`: URC Rulebook PDFs (e.g., `rules2026.pdf`)
+   - `sar/`: Team SAR reports (e.g., `LUSI_SAR_2025.pdf`)
+   - `drive/`: Archived Drive files (e.g., `BOM_2024.pdf`)
+2. Run the ingester:
+   `python agent/ingest.py`
+3. Processed files will be moved to `agent/ingest/processed/` automatically.
 
-This will chunk the text, vectorize it with OpenAI, upload it into the `urc_rules` namespace in Pinecone, and delete any rules older than 2025.
+### 2. YouTube Ingestion (Transcripts)
+For SAR presentation videos, use the dedicated CLI:
+`python agent/ingest_youtube.py --url [URL] --team [TEAM] --year [YEAR]`
+
+---
 
 ## Memory Features
 
-When chatting with the AI, if a problem is resolved, click the **Store Memory** button in the top right. Claude will summarize the history, determine the subsystem affected, and record it into your Pinecone \`memory\` namespace. It will automatically be searched on future queries!
+When chatting with the AI, if a problem is resolved, click the **Store Memory** button in the top right. Claude will summarize the history, determine the subsystem affected, and record it into your Pinecone `memory` namespace. It will automatically be searched on future queries!
