@@ -49,6 +49,53 @@ function selectModel(intent, searchTerms) {
   return model;
 }
 
+function extractSnippet(fullText, searchTerms, contextSize = 1500) {
+  if (!fullText) return '';
+  
+  const cleanText = fullText.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  const terms = searchTerms.toLowerCase().split(' ').filter(t => t.length > 3);
+  
+  if (terms.length === 0) return cleanText.substring(0, contextSize * 2);
+
+  // Find all match indices for all terms
+  const matchIndices = [];
+  const lowerText = cleanText.toLowerCase();
+  
+  for (const term of terms) {
+    let pos = lowerText.indexOf(term);
+    while (pos !== -1) {
+      matchIndices.push(pos);
+      pos = lowerText.indexOf(term, pos + term.length);
+      if (matchIndices.length > 50) break; // Safety cap
+    }
+  }
+
+  if (matchIndices.length === 0) {
+    return cleanText.substring(0, contextSize * 2);
+  }
+
+  // Sort and pick top 2 distinctive matches (at least contextSize apart if possible)
+  matchIndices.sort((a, b) => a - b);
+  const bestMatches = [matchIndices[0]];
+  for (let i = 1; i < matchIndices.length; i++) {
+    if (matchIndices[i] > bestMatches[bestMatches.length - 1] + contextSize) {
+      bestMatches.push(matchIndices[i]);
+      if (bestMatches.length >= 2) break;
+    }
+  }
+
+  // Generate snippets
+  const snippets = bestMatches.map(bestIndex => {
+    const start = Math.max(0, bestIndex - contextSize);
+    const end = Math.min(cleanText.length, bestIndex + contextSize);
+    const prefix = start > 0 ? '...' : '';
+    const suffix = end < cleanText.length ? '...' : '';
+    return prefix + cleanText.substring(start, end) + suffix;
+  });
+
+  return snippets.join('\n---\n').substring(0, 3000);
+}
+
 async function classifyQueryIntent(userMessage) {
   const res = await anthropic.messages.create({
     model: 'claude-sonnet-4-6',
@@ -174,7 +221,13 @@ async function fetchConfluenceExcerpts(query, spaces) {
       }
     }
 
-    return data.results.map(r => `<page space="${r.space?.key || 'Unknown'}" title="${r.title}" url="${r._links.base}${r._links.webui}">${r.body?.view?.value?.substring(0, 2000) || ''}...</page>`).join('\n');
+    if (!data.results) return '';
+
+    return data.results.map(r => {
+      const bodyText = r.body?.view?.value || '';
+      const snippet = extractSnippet(bodyText, query, 1500);
+      return `<page space="${r.space?.key || 'Unknown'}" title="${r.title}" url="${r._links.base}${r._links.webui}">${snippet}</page>`;
+    }).join('\n');
   } catch (e) {
     console.error("Confluence Error", e);
     return '';
