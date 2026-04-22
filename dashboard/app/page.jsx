@@ -44,7 +44,12 @@ export default function Home() {
 
       const data = await res.json();
       
-      setMessages(prev => [...prev, { role: 'assistant', content: data.message }]);
+      setMessages(prev => [...prev, { 
+        role: 'assistant', 
+        content: data.message,
+        model: data.model,
+        cached: data.cached
+      }]);
       
     } catch (error) {
       console.error(error);
@@ -95,6 +100,11 @@ export default function Home() {
               <ReactMarkdown remarkPlugins={[remarkGfm]}>
                 {msg.content}
               </ReactMarkdown>
+              {msg.role === 'assistant' && (msg.model || msg.cached) && (
+                <div className={styles.modelBadge}>
+                  {msg.cached ? '⚡ cached' : msg.model?.split('-').slice(1, 2).join('') || msg.model}
+                </div>
+              )}
             </div>
           </div>
         ))}

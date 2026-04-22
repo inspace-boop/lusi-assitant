@@ -8,6 +8,47 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 // Using standard fetch for Atlassian REST APIs as requested
 
+const queryCache = new Map();
+const CACHE_MAX_SIZE = 20;
+const CACHE_TTL_MS = 1000 * 60 * 30; // 30 minutes
+
+let totalRequests = 0;
+let cacheHits = 0;
+
+function getCacheKey(searchTerms, jiraProjects, confluenceSpaces) {
+  return `${searchTerms?.toLowerCase() || ''}|${(jiraProjects || []).join(',')}|${(confluenceSpaces || []).join(',')}`;
+}
+
+function getFromCache(key) {
+  const entry = queryCache.get(key);
+  if (!entry) return null;
+  if (Date.now() - entry.timestamp > CACHE_TTL_MS) {
+    queryCache.delete(key);
+    return null;
+  }
+  return entry.value;
+}
+
+function setCache(key, value) {
+  if (queryCache.size >= CACHE_MAX_SIZE) {
+    // Delete oldest entry (first item in the Map iterator)
+    const firstKey = queryCache.keys().next().value;
+    queryCache.delete(firstKey);
+  }
+  queryCache.set(key, { value, timestamp: Date.now() });
+}
+
+function selectModel(intent, searchTerms) {
+  const isSimple = (
+    intent.prioritize[0] === 'jira' ||
+    intent.prioritize[0] === 'rules' ||
+    (searchTerms && searchTerms.split(' ').length <= 3)
+  );
+  const model = isSimple ? 'claude-haiku-4-5-20251001' : 'claude-sonnet-4-6';
+  console.log(`Model selected: ${model} (simple: ${isSimple})`);
+  return model;
+}
+
 async function classifyQueryIntent(userMessage) {
   const res = await anthropic.messages.create({
     model: 'claude-sonnet-4-6',
@@ -63,7 +104,7 @@ async function fetchConfluenceExcerpts(query, spaces) {
     const domain = process.env.ATLASSIAN_DOMAIN.replace(/^https?:\/\//, '').replace(/\/$/, '');
     const url = new URL(`https://${domain}/wiki/rest/api/content/search`);
     url.searchParams.append('cql', `(title ~ "${query}" OR text ~ "${query}") AND space IN (${spaces}) ORDER BY lastmodified DESC`);
-    url.searchParams.append('limit', '8');
+    url.searchParams.append('limit', '3'); // Reduced for cost
     url.searchParams.append('expand', 'space,body.view');
 
     const pinnedCQL = `title IN ("4/19 - Leadership Transition", "EOY Goals", "End of Year Goals", "Leadership Transition") AND space = "URC"`;
@@ -105,7 +146,7 @@ async function fetchConfluenceExcerpts(query, spaces) {
     if (data.results && data.results.length === 0) {
       const fallbackUrl = new URL(`https://${domain}/wiki/rest/api/content/search`);
       fallbackUrl.searchParams.append('cql', `(title ~ "${query}" OR text ~ "${query}") ORDER BY lastmodified DESC`);
-      fallbackUrl.searchParams.append('limit', '8');
+      fallbackUrl.searchParams.append('limit', '3'); // Reduced for cost
       fallbackUrl.searchParams.append('expand', 'space,body.view');
       
       res = await fetch(fallbackUrl.toString(), {
@@ -133,7 +174,7 @@ async function fetchConfluenceExcerpts(query, spaces) {
       }
     }
 
-    return data.results.map(r => `<page space="${r.space?.key || 'Unknown'}" title="${r.title}" url="${r._links.base}${r._links.webui}">${r.body?.view?.value?.substring(0, 8000) || ''}...</page>`).join('\n');
+    return data.results.map(r => `<page space="${r.space?.key || 'Unknown'}" title="${r.title}" url="${r._links.base}${r._links.webui}">${r.body?.view?.value?.substring(0, 2000) || ''}...</page>`).join('\n');
   } catch (e) {
     console.error("Confluence Error", e);
     return '';
@@ -153,7 +194,7 @@ async function fetchJiraIssues(query, projects) {
     const domain = process.env.ATLASSIAN_DOMAIN.replace(/^https?:\/\//, '').replace(/\/$/, '');
     const url = new URL(`https://${domain}/rest/api/3/search/jql`);
     url.searchParams.append('jql', `project IN (${projects}) AND text ~ "${query}" ORDER BY updated DESC`);
-    url.searchParams.append('maxResults', '8');
+    url.searchParams.append('maxResults', '3'); // Reduced for cost
     url.searchParams.append('fields', 'summary,description,status,assignee,updated');
 
     console.log(`JIRA URL CONSTRUCTED: ${url.toString()}`);
@@ -177,7 +218,7 @@ async function fetchJiraIssues(query, projects) {
         descSnippet = issue.fields.description.content[0].content.map(c => c.text).join(' ');
       }
       const assigneeStr = issue.fields?.assignee?.displayName ? ` assigned to ${issue.fields.assignee.displayName}` : '';
-      return `<issue id="${issue.key}" title="${issue.fields?.summary || 'Untitiled'}" status="${issue.fields?.status?.name || 'Unknown'}"${assigneeStr}>${descSnippet.substring(0,250)}...</issue>`;
+      return `<issue id="${issue.key}" title="${issue.fields?.summary || 'Untitiled'}" status="${issue.fields?.status?.name || 'Unknown'}"${assigneeStr}>${descSnippet.substring(0,300)}...</issue>`;
     }).join('\n');
   } catch(e) {
     console.error("Jira Error", e);
@@ -207,23 +248,15 @@ async function queryVectorDb(query) {
     const currentYear = process.env.URC_YEAR ? parseInt(process.env.URC_YEAR) : 2026;
     const prevYear = currentYear - 1;
 
-    // Search rules namespace (Current Year)
+    // Search rules namespace (Current Year only for cost optimization)
     const rulesResCurrent = await index.namespace('urc_rules').query({ 
-      topK: 3, 
+      topK: 2, 
       vector: queryVector, 
       includeMetadata: true,
       filter: { year: { "$eq": currentYear } }
     });
 
-    // Search rules namespace (Previous Year)
-    const rulesResPrev = await index.namespace('urc_rules').query({ 
-      topK: 2, 
-      vector: queryVector, 
-      includeMetadata: true,
-      filter: { year: { "$eq": prevYear } }
-    });
-
-    const allRules = [...(rulesResCurrent?.matches || []), ...(rulesResPrev?.matches || [])];
+    const allRules = rulesResCurrent?.matches || [];
     
     if (allRules.length > 0) {
       console.log('Pinecone rules sample:', JSON.stringify(rulesResCurrent.matches[0], null, 2));
@@ -238,13 +271,18 @@ async function queryVectorDb(query) {
     }
 
     // Search memory namespace
-    const memRes = await index.namespace('memory').query({ topK: 3, vector: queryVector, includeMetadata: true });
+    const memRes = await index.namespace('memory').query({ topK: 2, vector: queryVector, includeMetadata: true });
     memoryText = memRes.matches.map(m => `<memory date="${m.metadata.date}" subsystem="${m.metadata.subsystem}" outcome="${m.metadata.outcome}">\nProblem: ${m.metadata.problem}\nSolution: ${m.metadata.solution}\n</memory>`).join('\n');
 
+    // Search SAR reports namespace
+    const sarRes = await index.namespace('sar_reports').query({ topK: 2, vector: queryVector, includeMetadata: true });
+    const sarText = sarRes.matches.map(m => `<sar_report team="${m.metadata.team}" year="${m.metadata.year}" page="${m.metadata.page || 'N/A'}" source="${m.metadata.source || 'Unknown'}" type="${m.metadata.type || 'unknown'}">${m.metadata.text}</sar_report>`).join('\n');
+
+    return { rulesText, memoryText, sarText };
   } catch(e) {
     console.error("Vector DB Error", e);
   }
-  return { rulesText, memoryText };
+  return { rulesText: '', memoryText: '', sarText: '' };
 }
 
 
@@ -262,19 +300,42 @@ export async function POST(request) {
     const { messages } = await request.json();
     const lastUserMessage = messages[messages.length - 1].content;
 
+    totalRequests++;
+    if (totalRequests % 10 === 0) {
+      console.log(`Cache hits: ${cacheHits}/${totalRequests} (${((cacheHits / totalRequests) * 100).toFixed(1)}%)`);
+    }
+
     const intent = await classifyQueryIntent(lastUserMessage);
     console.log('Intent classification result:', JSON.stringify(intent, null, 2));
-    console.log('Extracted search terms:', intent.searchTerms);
+    
+    const searchTerms = intent.searchTerms;
+    const cacheKey = getCacheKey(searchTerms, intent.jiraProjects, intent.confluenceSpaces);
+    
+    // Skip cache for Jira (data changes often) or if no intent search terms
+    const canCache = intent.prioritize[0] !== 'jira' && searchTerms;
+    const cachedResponse = canCache ? getFromCache(cacheKey) : null;
+
+    if (cachedResponse) {
+      cacheHits++;
+      console.log('Cache hit:', cacheKey);
+      return NextResponse.json({ 
+        message: cachedResponse, 
+        model: 'cached',
+        cached: true 
+      });
+    }
+
+    console.log('Extracted search terms:', searchTerms);
     console.log('Jira projects:', intent.jiraProjects);
     console.log('Confluence spaces:', intent.confluenceSpaces);
 
     const jiraProjectFilter = intent.jiraProjects && intent.jiraProjects.length > 0 ? intent.jiraProjects.map(p => `"${p}"`).join(', ') : '"LP", "AD", "OSP", "URC"';
     const confluenceSpaceFilter = intent.confluenceSpaces && intent.confluenceSpaces.length > 0 ? intent.confluenceSpaces.map(s => `"${s}"`).join(', ') : '"AD", "Osprey", "URC"';
 
-    const [confluenceData, jiraData, { rulesText, memoryText }] = await Promise.all([
-      fetchConfluenceExcerpts(intent.searchTerms, confluenceSpaceFilter),
-      fetchJiraIssues(intent.searchTerms, jiraProjectFilter),
-      queryVectorDb(intent.searchTerms)
+    const [confluenceData, jiraData, { rulesText, memoryText, sarText }] = await Promise.all([
+      fetchConfluenceExcerpts(searchTerms, confluenceSpaceFilter),
+      fetchJiraIssues(searchTerms, jiraProjectFilter),
+      queryVectorDb(searchTerms)
     ]);
 
     const systemPromptText = `You are the LUSI Rover Assistant — an AI built for the Lehigh University Space Initiative engineering team. LUSI builds a Mars rover to compete in the University Rover Challenge (URC) each year.
@@ -292,12 +353,22 @@ Jira Projects (task tracking, parts ordering, issues):
 - OSP (Cubesat): Cubesat/Osprey subteam tasks and issues
 - URC (URC Rover): Engineering tasks, subsystem tickets, bugs, design action items
 
+Google Drive (shared team files):
+- Old design documents, spreadsheets, BOMs, CAD reference files
+- Historical rover documentation and reports
+- Shared resources and reference materials
+
+SAR Reports (System Acceptance Reviews):
+- LUSI's own past SAR reports by year
+- Competitor team SAR reports for benchmarking
+
 Search routing rules:
 - Parts, orders, inventory, "did X arrive", "was X bought/ordered/received" → prioritize Jira LP project
 - Meeting notes, design specs, documentation, goals, "what did we discuss" → prioritize Confluence URC or AD space
 - Bug reports, action items, assigned tasks → prioritize Jira URC or AD project
-- Cubesat/Osprey questions → prioritize Confluence Osprey space and Jira OSP project
-- When unsure, search both Confluence and Jira simultaneously
+- Old design documents, spreadsheets, BOMs, CAD reference files, budgets, historical records ("old", "previous", "spreadsheet", "BOM", "budget", "historical", "last year") → search Google Drive
+- SAR Reports (System Acceptance Reviews) from LUSI or competitors, competitor benchmarks, "how did we/they do X before" → search SAR reports
+- When unsure, search multiple sources simultaneously. For "BOM" or "last year's design", check both SAR reports and Google Drive.
 
 Your job is to help team members:
 - Find answers in LUSI's Confluence documentation and Jira tickets
@@ -321,6 +392,7 @@ ${confluenceData ? `<confluence>\n${confluenceData}\n</confluence>` : ''}
 ${jiraData ? `<jira>\n${jiraData}\n</jira>` : ''}
 ${rulesText ? `<urc_rules>\n${rulesText}\n</urc_rules>` : ''}
 ${memoryText ? `<past_solutions>\n${memoryText}\n</past_solutions>` : ''}
+${sarText ? `<sar_reports>\n${sarText}\n</sar_reports>` : ''}
 </context>
 `;
 
@@ -333,14 +405,41 @@ ${memoryText ? `<past_solutions>\n${memoryText}\n</past_solutions>` : ''}
     // Inject context into the latest user message
     activeMessages[activeMessages.length - 1].content = contextBlock + "\n\nUser question: " + activeMessages[activeMessages.length - 1].content;
 
+    const selectedModel = selectModel(intent, searchTerms);
+
     const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-6', // locked to this specific model as per spec
+      model: selectedModel,
       max_tokens: 2048,
       system: systemPromptText,
-      messages: activeMessages
+      messages: activeMessages,
+      mcp_servers: [
+        {
+          type: "url",
+          url: "https://drivemcp.googleapis.com/mcp/v1",
+          name: "google-drive"
+        }
+      ]
     });
 
-    return NextResponse.json({ message: response.content[0].text });
+    const allContent = response.content
+      .map(block => {
+        if (block.type === 'text') return block.text;
+        if (block.type === 'mcp_tool_result') {
+          return block.content?.[0]?.text || '';
+        }
+        return '';
+      })
+      .filter(Boolean)
+      .join('\n');
+
+    if (canCache) {
+      setCache(cacheKey, allContent);
+    }
+
+    return NextResponse.json({ 
+      message: allContent,
+      model: selectedModel
+    });
   } catch(error) {
     console.error("Chat API error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
