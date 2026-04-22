@@ -278,11 +278,15 @@ async function queryVectorDb(query) {
     const sarRes = await index.namespace('sar_reports').query({ topK: 2, vector: queryVector, includeMetadata: true });
     const sarText = sarRes.matches.map(m => `<sar_report team="${m.metadata.team}" year="${m.metadata.year}" page="${m.metadata.page || 'N/A'}" source="${m.metadata.source || 'Unknown'}" type="${m.metadata.type || 'unknown'}">${m.metadata.text}</sar_report>`).join('\n');
 
-    return { rulesText, memoryText, sarText };
+    // Search manually ingested Google Drive namespace 
+    const driveRes = await index.namespace('google_drive').query({ topK: 2, vector: queryVector, includeMetadata: true });
+    const driveText = driveRes.matches.map(m => `<google_drive_file filename="${m.metadata.filename}" year="${m.metadata.year}" category="${m.metadata.category}">${m.metadata.text}</google_drive_file>`).join('\n');
+
+    return { rulesText, memoryText, sarText, driveText };
   } catch(e) {
     console.error("Vector DB Error", e);
   }
-  return { rulesText: '', memoryText: '', sarText: '' };
+  return { rulesText: '', memoryText: '', sarText: '', driveText: '' };
 }
 
 
@@ -332,7 +336,7 @@ export async function POST(request) {
     const jiraProjectFilter = intent.jiraProjects && intent.jiraProjects.length > 0 ? intent.jiraProjects.map(p => `"${p}"`).join(', ') : '"LP", "AD", "OSP", "URC"';
     const confluenceSpaceFilter = intent.confluenceSpaces && intent.confluenceSpaces.length > 0 ? intent.confluenceSpaces.map(s => `"${s}"`).join(', ') : '"AD", "Osprey", "URC"';
 
-    const [confluenceData, jiraData, { rulesText, memoryText, sarText }] = await Promise.all([
+    const [confluenceData, jiraData, { rulesText, memoryText, sarText, driveText }] = await Promise.all([
       fetchConfluenceExcerpts(searchTerms, confluenceSpaceFilter),
       fetchJiraIssues(searchTerms, jiraProjectFilter),
       queryVectorDb(searchTerms)
@@ -353,10 +357,10 @@ Jira Projects (task tracking, parts ordering, issues):
 - OSP (Cubesat): Cubesat/Osprey subteam tasks and issues
 - URC (URC Rover): Engineering tasks, subsystem tickets, bugs, design action items
 
-Google Drive (shared team files):
+Google Drive (archived and historical files):
 - Old design documents, spreadsheets, BOMs, CAD reference files
 - Historical rover documentation and reports
-- Shared resources and reference materials
+- Budget and resource reference materials from previous years
 
 SAR Reports (System Acceptance Reviews):
 - LUSI's own past SAR reports by year
@@ -366,7 +370,7 @@ Search routing rules:
 - Parts, orders, inventory, "did X arrive", "was X bought/ordered/received" → prioritize Jira LP project
 - Meeting notes, design specs, documentation, goals, "what did we discuss" → prioritize Confluence URC or AD space
 - Bug reports, action items, assigned tasks → prioritize Jira URC or AD project
-- Old design documents, spreadsheets, BOMs, CAD reference files, budgets, historical records ("old", "previous", "spreadsheet", "BOM", "budget", "historical", "last year") → search Google Drive
+- Old design documents, spreadsheets, BOMs, CAD reference files, budgets, historical records ("old", "previous", "spreadsheet", "BOM", "budget", "historical", "last year") → search archived Google Drive files
 - SAR Reports (System Acceptance Reviews) from LUSI or competitors, competitor benchmarks, "how did we/they do X before" → search SAR reports
 - When unsure, search multiple sources simultaneously. For "BOM" or "last year's design", check both SAR reports and Google Drive.
 
@@ -393,6 +397,7 @@ ${jiraData ? `<jira>\n${jiraData}\n</jira>` : ''}
 ${rulesText ? `<urc_rules>\n${rulesText}\n</urc_rules>` : ''}
 ${memoryText ? `<past_solutions>\n${memoryText}\n</past_solutions>` : ''}
 ${sarText ? `<sar_reports>\n${sarText}\n</sar_reports>` : ''}
+${driveText ? `<google_drive>\n${driveText}\n</google_drive>` : ''}
 </context>
 `;
 
@@ -411,26 +416,10 @@ ${sarText ? `<sar_reports>\n${sarText}\n</sar_reports>` : ''}
       model: selectedModel,
       max_tokens: 2048,
       system: systemPromptText,
-      messages: activeMessages,
-      mcp_servers: [
-        {
-          type: "url",
-          url: "https://drivemcp.googleapis.com/mcp/v1",
-          name: "google-drive"
-        }
-      ]
+      messages: activeMessages
     });
 
-    const allContent = response.content
-      .map(block => {
-        if (block.type === 'text') return block.text;
-        if (block.type === 'mcp_tool_result') {
-          return block.content?.[0]?.text || '';
-        }
-        return '';
-      })
-      .filter(Boolean)
-      .join('\n');
+    const allContent = response.content[0].text;
 
     if (canCache) {
       setCache(cacheKey, allContent);
