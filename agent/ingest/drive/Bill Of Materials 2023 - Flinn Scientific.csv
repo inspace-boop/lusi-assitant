@@ -1,0 +1,7 @@
+Subteam,Member ('@'),Date ,Link,Item Name,Purpose/Location,Item ID #,Quantity,Unit Price,Shipping Cost,Total Price,Order Status,Delivery,Shipped?,Picked Up?,By Subteam,
+Science,Evan Woodward,10/20/22,https://www.flinnsci.com/catalase-1-g/c0359/,"Catalase, 1g",,C0359,1,$41.66,$7.50,$49.16,no,,,,Subteam,Cost
+Science,Jake Feuerstein,10/26/22,https://www.flinnsci.com/cobalt-nitrate-lab-grade-100-g/c0412/,Cobalt (II) Nitrate 100g,,C0412,1,$23.06,$7.50,$30.56,no,,,,Science, $ 137.62 
+,,,,,,,,,,,,,,,Robotic Arm, $ -   
+Science,Jake Feuerstein,10/26/22,https://www.thermofisher.com/order/catalog/product/612175000?SID=srch-srp-612175000,Sodium Hexametaphosphate 500g,,612175000,1,$57.90,,$57.90,No,,,,DCS, $ -   
+,,,,,,,,,,,,,,,Software, $ -   
+,,,,,,,,,,,,,,,EC, $ -   

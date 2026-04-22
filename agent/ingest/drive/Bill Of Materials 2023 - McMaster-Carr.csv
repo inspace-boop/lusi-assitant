@@ -1,0 +1,77 @@
+f,Member ('@'),Notes,Link,Item Name,Purpose/Location,Item ID #,Quantity,Unit Price,Shipping Cost,Total Price,Order Status,Picked Up?,Sorted?,By Subteam,
+DCS,Nathaniel Dudko,verified,https://www.mcmaster.com/catalog/128/3498,18-8 Stainless Steel Hex Nut,,91841A007,1,$4.81,,$4.81,yes,yes,,Subteam, Cost 
+DCS,Nathaniel Dudko,verified,https://www.mcmaster.com/catalog/128/3482,18-8 Stainless Steel Threaded Rod,,95412A420,3,$6.71,,$20.13,yes,yes,,Science, $ 100.61 
+DCS,Meghan Feldman,verified,https://www.mcmaster.com/fasteners/thread-size~1-4-20/hex-head-screws-4/medium-strength-grade-5-steel-hex-head-screws/length~1-4/,Medium-Strength Grade 5 Steel Hex Head Screws,,92865A171	,3,$6.38,,$19.14,yes,yes,,Robotic Arm, $ 834.13 
+DCS,Meghan Feldman,verified,https://www.mcmaster.com/flat-head-screws/alloy-steel-hex-drive-flat-head-screws-9/,Hex 5/16-18 screws,,91253A576,2,$7.95,,$15.90,yes,yes,,DCS, $ 297.83 
+DCS,Meghan Feldman,verified,https://www.mcmaster.com/nuts/thread-size~5-16-18/medium-strength-steel-hex-nuts-grade-5/,Hex 5/16-18 nuts,,98797A030,2,$9.14,,$18.28,yes,yes,yes,Software, $ -   
+DCS,Meghan Feldman,verified,https://www.mcmaster.com/fasteners/thread-size~5-40/head-type~flat/,Hex 5-40 screws,,92210A126,1,$6.38,,$6.38,yes,yes,,EC, $ -   
+DCS,Meghan Feldman,verified,https://www.mcmaster.com/nuts/thread-size~5-40/,Hex 5-40 nuts,,90480A006,1,$3.98,,$3.98,yes,yes,,,
+DCS,Meghan Feldman,verified,https://www.mcmaster.com/hex-nuts/medium-strength-steel-hex-nuts-grade-5/,hex 1/4-20 nuts,,95462A029,1,$8.95,,$8.95,yes,yes,,,
+Science,Mika Asfaw,Skip,https://www.mcmaster.com/91290A075/,Screw 16mm M2.6x0.45mm,"For mounting pumps to rack,  and for mounting rack to chassis",91290A075,1,$11.45,,$11.45,skip,,,,
+Science,Mika Asfaw,Skip,https://www.mcmaster.com/90592A008/,Hex Nut M2.6x0.45mm,"For mounting pumps to rack,  and for mounting rack to chassis",09592A008,1,$2.23,,$2.23,skip,,,,
+Science,Jake Feuerstein,verified,https://www.mcmaster.com/90592A004/,Hex Nut M2x0.4mm ,,90592A004,1,$2.23,,$2.23,yes,yes,yes,,
+Science ,Jake Feuerstein,verified,https://www.mcmaster.com/91290A015/,Screw 8mm M2x0.4mm,,91290A015,1,$18.04,,$18.04,yes,yes,,,
+Science,Mika Asfaw,Skip,https://www.mcmaster.com/91290A019/,Scew 12mm M2x0.4mm,Pump Rack to Chassis Mount,91290A019,1,$15.82,,$15.82,skip,,,,
+Science,Jake Feuerstein,verified,https://www.mcmaster.com/91290A530/,Screw 45mm M10x1.5mm,,91290A530,1,$15.32,,$15.32,yes,yes,,,
+Science,Jake Feuerstein,verified,https://www.mcmaster.com/90592A024/,Hex Nut 17mm M10x1.5mm,,90592A024,1,$16.25,,$16.25,yes,yes,yes,,
+Science,Jake Feuerstein,verified,https://www.mcmaster.com/96144A256/,Scew 25mm M10x1.5mm,,96144A256,1,$13.29,,$13.29,yes,yes,,,
+Robotic Arm,Ryan Kong,skip,https://www.mcmaster.com/61205K75/,Fixed Alignment Linear Ball Bearing,To attach the grippers to the support rod,61205K75,2,$20.69,,$41.38,yes,yes,,,
+Robotic Arm,Ryan Kong,verified,https://www.mcmaster.com/5395T211/,Set Screw Shaft Coupling,To attach the DC motor to the gearbox and the 2 output shafts to the threaded rod,5395T211,3,$7.58,,$22.74,yes,yes,,,
+Robotic Arm,Ryan Kong,verified,https://www.mcmaster.com/4634T34/,Aluminum Shaft,For end effector support motion,4634T34,1,$2.16,,$2.16,yes,yes,,,
+Science,Mika Asfaw,Skip,https://www.mcmaster.com/4634T34/,Aluminum Shaft,SciMod Drill motion,4634T34,1,$2.16,,$2.16,skip,,,,
+DCS,Henry Brunz,verified,https://www.mcmaster.com/91247A551/,2+1/4in 1/4-20 Bolts,Standard attatchment bolts,91247A551,1,$12.25,,$12.25,yes,yes,yes,,
+DCS,Henry Brunz,verified,https://www.mcmaster.com/91247A552/,2+1/2in 1/4-20 Bolts,Wheel attatchment bolts,91247A552,1,$13.23,,$13.23,yes,yes,yes,,
+DCS,Henry Brunz,verified,https://www.mcmaster.com/91247A554/,3in 1/4-20 Bolts,Long attatchment bolts,91247A554,1,$14.90,,$14.90,yes,yes,yes,,
+DCS,Henry Brunz,verified,https://www.mcmaster.com/6384K361/,1/2in by 3/8in Sealed Ball Bearing,Lower bogie bearings,6384K361,4,$15.69,,$62.76,yes,yes,yes,,
+DCS,Henry Brunz,verified,https://www.mcmaster.com/92240A253/,1in 7/8-9 Bolts,Axel connecting screw,92240A253,2,$6.40,,$12.80,yes,yes,yes,,
+DCS,Henry Brunz,verified,https://www.mcmaster.com/98126A748/,7/8in to 1+3/8in Washers,Axel connecting washer,98126A748,1,$8.52,,$8.52,yes,yes,,,
+Robotic Arm,Luis Perez,verified,https://www.mcmaster.com/61005K311/,"Clamping Shaft Coupling Steel, for 1/4"" x 1/4"" Diameter Round Shaft",Connecting the shaft of the motor with the rotary shaft going through the diver gear,61005K311,1,$29.60,,$29.60,yes,yes,yes,,
+Robotic Arm,Luis Perez,verified,https://www.mcmaster.com/2664N13/,"Metal Gear - 20 Degree Pressure Angle Round with Set Screw, 1 Module, 30 Teeth, 1045 Steel",Part of the planetary gear set-up,2664N13,4,$17.38,,$69.52,yes,yes,yes,,
+Robotic Arm,Luis Perez,verified,https://www.mcmaster.com/57155K497/,"Stainless Steel Ball Bearing Flanged, Open, Trade Number 148",,57155K497,8,$12.08,,$96.64,yes,yes,,,
+Robotic Arm,Luis Perez,verified,https://www.mcmaster.com/5909K7/,Needle-Roller Thrust Bearing,,5909K7,1,$55.82,11.04,$66.86,yes,,,,
+Robotic Arm,Luis Perez,verified,https://www.mcmaster.com/5909K958/,Needle-Roller Thrust Bearing,,5909K958,1,$52.71,,$52.71,yes,,,,
+Robotic Arm,Luis Perez,verified,https://www.mcmaster.com/91841A195/,18-8 Stainless Steel Hex Nut,,91841A195,1,$5.35,,$5.35,yes,,,,
+Robotic Arm,Luis Perez,skip,https://www.mcmaster.com/92511A069/,Aluminum Unthreaded Spacer,,92511A069,0,$3.74,,$0.00,skip,,,,
+Robotic Arm,Luis Perez,verified,https://www.mcmaster.com/91251A288/,Black-Oxide Alloy Steel Socket Head Screw,,91251A288,1,$12.86,,$12.86,yes,,,,
+Robotic Arm,Luis Perez,skip,https://www.mcmaster.com/91251A089/,Black-Oxide Alloy Steel Socket Head Screw,,91251A089,0,$9.58,,$0.00,skip,,,,
+Robotic Arm,Luis Perez,skip,https://www.mcmaster.com/92510A459/,Aluminum Unthreaded Spacer,,92510A459,0,$7.66,,$0.00,skip,,,,
+Robotic Arm,Luis Perez,verified,https://www.mcmaster.com/91292A118/,18-8 Stainless Steel Socket Head Screw,,91292A118,1,$9.81,,$9.81,yes,,,,
+Robotic Arm,Luis Perez,double,https://www.mcmaster.com/90205A344/,Super-Corrosion-Resistant 316 Stainless Steel Narrow Hex Nut,,90205A344,0,$7.94,,$0.00,skip,,,,
+Robotic Arm,Luis Perez,verified,https://www.mcmaster.com/1265K64/,Rotary Shaft,,1265K64,4,$25.53,,$102.12,yes,,,,
+Robotic Arm,Luis Perez,verified,https://www.mcmaster.com/6056N16/,Carbon Steel Set Screw Collar,,6056N16,6,$2.17,,$13.02,yes,,,,
+Robotic Arm,Zemichael Gebeyehu,verified,https://www.mcmaster.com/90044A425/,"Black-Oxide Alloy Steel Socket Head Screw",Base to chassis attch.,90044A425,1,$12.25,,$12.25,yes,,,,
+Robotic Arm,Zemichael Gebeyehu,verified,https://www.mcmaster.com/92511a061/,"Aluminum Unthreaded Spacer",,92511A061,2,$3.27,,$6.54,yes,,,,
+Robotic Arm,Zemichael Gebeyehu,verified,https://www.mcmaster.com/92510A769/,Aluminum Unthreaded Spacer,,92510A769,2,$2.04,,$4.08,yes,,,,
+Robotic Arm,Zemichael Gebeyehu,verified,https://www.mcmaster.com/95462A029/,"Medium-Strength Steel Hex Nut",,95462A029,1,$8.95,,$8.95,yes,,,,
+Robotic Arm,Zemichael Gebeyehu,verified,https://www.mcmaster.com/91251A333/,"Black-Oxide Alloy Steel Socket Head Screw",,91251A333,1,$4.55,,$4.55,yes,,,,
+Robotic Arm,Zemichael Gebeyehu,verified,https://www.mcmaster.com/94895A810/,High-Strength Steel Hex Nut,,94895A810,1,$7.97,,$7.97,yes,,,,
+DCS,Henry Brunz,verified,https://www.mcmaster.com/6546K51-6546K512/,1x1/2 2ft aluminum Tube,For mounting differential,6546k51,1,$14.84,,$14.84,yes,,,,
+DCS,Henry Brunz,skip,https://www.mcmaster.com/92965A720/,1/2-13 bolts,For mounting differential,92965A720,0,$17.32,,$0.00,skip,,,,
+DCS,Henry Brunz,verified,https://www.mcmaster.com/95615A210/,1/2-13 lock nuts,For mounting differential,95615A210,1,$14.60,,$14.60,yes,,,,
+DCS,Henry Brunz,verified,https://www.mcmaster.com/8975K612-8975K838/,1/4x3.5 in 2ft aluminum bar,Differential bar,8975K612,1,$22.45,,$22.45,yes,,,,
+DCS,Henry Brunz,verified,https://www.mcmaster.com/6338K418/,1/2 in flanged bushing,Differential bearing,6338k418,1,$2.24,,$2.24,yes,,,,
+Robotic Arm,Zemichael Gebeyehu,verified,https://www.mcmaster.com/90480A195/,10-32 Hex Nuts,,"90480A195",1,$2.20,,$2.20,yes,,,,
+Robotic Arm,Zemichael Gebeyehu,verified,https://www.mcmaster.com/91255A815/,"10-32 Thread, 2-1/4"" Long",,91255A815,1,$16.46,,$16.46,yes,,,,
+Science,Zemichael Gebeyehu,verified,https://www.mcmaster.com/90751A120/,18-8 Stainless Steel Socket Head Screws,,90751A120,1,$12.20,,$12.20,yes,,,,
+Science ,Zemichael Gebeyehu,verified,https://www.mcmaster.com/90592A090/,"Medium-Strength, Class 8, M4 x 0.7 mm Thread",,"90592A090",1,$3.33,,$3.33,yes,,,,
+DCS,Mika Asfaw,verified,https://www.mcmaster.com/91247A720/,Medium-Strength Grade 5 Steel Hex Head Screw,For mounting differential,91247A720,1,$9.36,,$9.36,yes,,,,
+Robotic Arm,Mika Asfaw,verified,https://www.mcmaster.com/5909K586/,1 mm Thick Washer for 75 mm Shaft Diameter Needle-Roller Thrust Bearing,Gearbox,5909K586,1,$10.68,16.45,$27.13,yes,,,,
+Robotic Arm,Mika Asfaw,verified,https://www.mcmaster.com/9246k483/,6x6 6061 Aluminum,Ring Gear (To be CNC),9246k483,2,$16.92,,$33.84,yes,,,,
+Robotic Arm,Mika Asfaw,verified,https://www.mcmaster.com/5909K996/,1mm Washer for 85mm shaft,Gearbox,5909K996,1,$17.05,,$17.05,yes,,,,
+Robotic Arm,Josh Nepo,verified,https://www.mcmaster.com/shaft-couplings/system-of-measurement~metric/for-shaft-diameter~12mm/,"Set Screw Shaft Couplings",Wrist,5395T411,1,$21.18,,$21.18,yes,,,,
+Robotic Arm,Josh Nepo,verified,https://www.mcmaster.com/6435K14/,"Clamping Shaft Collar",,6435K14,1,$4.10,,$4.10,yes,,,,
+Robotic Arm,Josh Nepo,verified,https://www.mcmaster.com/2780T39/,"High-Load Ball Bearing",,2780T39,1,$19.06,,$19.06,yes,,,,
+Robotic Arm,Josh Nepo,verified,https://www.mcmaster.com/93225A878/,"Aluminum Threaded Rod",,93225A878,1,$15.68,,$15.68,yes,,,,
+Robotic Arm,Josh Nepo,verified,https://www.mcmaster.com/5395T111/,"Set Screw Shaft Coupling",,"5395T111",1,$5.33,,$5.33,yes,,,,
+Robotic Arm,Josh Nepo,verified,https://www.mcmaster.com/88705K72-88705K221/,"Easy-to-Machine 2011 Aluminum Hex Bar",,88705K72,1,$6.49,,$6.49,yes,,,,
+Robotic Arm,Josh Nepo,verified,https://www.mcmaster.com/5395T211/,"Set Screw Shaft Coupling",,5395T211,1,$8.00,,$8.00,yes,,,,
+Robotic Arm,Josh Nepo,verified,https://www.mcmaster.com/5972K91/,"Ball Bearing",,5972K91,2,$9.44,,$9.44,yes,,,,
+Robotic Arm,Josh Nepo,verified,https://www.mcmaster.com/6661K11/,"Ball Bearing",,6661K11,1,$20.06,,$20.06,yes,,,,
+Robotic Arm,Josh Nepo,verified,https://www.mcmaster.com/8974K28-8974K261/,Alumnium Shaft 1/2,,8974K28,1,$2.19,,$2.19,yes,,,,
+Robotic Arm,Josh Nepo,verified,https://www.mcmaster.com/6412K11/,"Set Screw Shaft Coupling",,6412K11,1,$11.53,,$11.53,yes,,,,
+Robotic Arm,Josh Nepo,VERified,https://www.mcmaster.com/3390N14/,"Clamping Two-Piece Shaft Collar with Keyway",,3390N14,1,$26.81,,$26.81,yes,,,,
+Robotic Arm,Josh Nepo,VERified,https://www.mcmaster.com/8974K22/,Aluminium Shaft 1/4,,"8974K22",1,$2.53,,$2.53,yes,,,,
+Robotic Arm,Josh Nepo,VERified,https://www.mcmaster.com/6063K13/,"Clamping Two-Piece Shaft Collar",,6063K13,1,$8.90,,$8.90,yes,,,,
+Robotic Arm,Josh Nepo,Verified,https://www.mcmaster.com/99461A914/,"Phillips Rounded Head Thread-Forming Screws",,99461A914,1,$7.04,,$7.04,yes,,,,
+DCS,Henry Brunz,verified,https://www.mcmaster.com/97372A113/,Male-Femal 1/4-28 Hex Adapter,,97372A113,1,$12.31,,$12.31,,,,,
+Science,Mika Asfaw,verified,https://www.mcmaster.com/15205a214/,Spring Hinge,,15205A214,2,$4.83,,$9.66,,,,,

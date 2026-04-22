@@ -1,0 +1,7 @@
+ ,Member ('@'),Date ,Link,Item Name,Purpose/Location,Item ID #,Quantity,Unit Price,Shipping Cost,Total Price,Order Status,Picked Up?,By Subteam,
+Robotic Arm,Ryan Kong,10/30/22,https://dragonplate.com/carbon-fiber-roll-wrapped-twill-tube-3-id-x-48-gloss-finish,"Carbon Fiber Roll Wrapped Twill Tube ~ 3"" ID x 48"", Gloss Finish","Connection to joints (shoulder to elbow, elbow to wrist)",FDPT3.0*3.125*48,1,$259.33,59.37,$318.70,ordered,,Subteam,Cost
+DCS,Henry Brunz,,https://dragonplate.com/roll-wrapped-twill-finish-round-tubes#/orderby=5&sFilters=24!161;27!188;29!429,"Carbon Fiber Tube 1in OD 24""",,,1,$52.17,,$52.17,ordered,,Science, $ -   
+DCS,Henry Brunz,,https://dragonplate.com/roll-wrapped-twill-finish-round-tubes#/orderby=5&sFilters=24!161;27!188;29!429,"Carbon Fiber Tube 1in OD ""48",,,2,$94.34,,$188.68,ordered,,Robotic Arm, $ 318.70 
+,,,,,,,,,,,,,DCS, $ 240.85 
+,,,,,,,,,,,,,Software, $ -   
+,,,,,,,,,,,,,EC, $ -   

@@ -1,0 +1,29 @@
+dCS,,,,,,,,, Logistics (Business & Team Leads Only) ,,,,,,,
+Subteam,Member ('@'),Link,Item Name,Purpose/Location,Item ID #,Quantity, Unit Price , Shipping Cost , Total Item Cost , Total Cost ,Pre-Order Status,Order Status,Picked Up?,Purchasing Run #,Subteam Cost, Cost 
+DCS,Henry Brunz,https://www.mcmaster.com/6546K53-6546K533/,"1in 6061 Square Aluminum Tube, 3ft",Suspension connecting tubes,6546K533,2, $ 19.53 ," ""this plus next two all in one order. shipping and sales tax added to 3rd line of order""  ", $ 39.06 , $ 39.06 ,verified,yes,,1,Robotic Arm, $ 48.86 
+DCS,Henry Brunz,https://www.mcmaster.com/8974K22-8974K221/,"1/4in 6061 Aluminum Shaft, 1ft",Suspension bogie shaft,8974K221,1, $ 2.53 ,, $ 2.53 , $ 2.53 ,verified,yes ,,1,DCS, $ 310.53 
+DCS,Henry Brunz,https://www.mcmaster.com/9056K36-9056K362/,"1in, 1/8in 6061 Aluminum Tube, 2ft",Suspension upper shaft,9056K362,1, $ 20.94 , $ 17.22 , $ 20.94 , $ 42.95 ,verified,yes,,2,Software, $ -   
+Robo,Hannah Peik,https://www.mcmaster.com/catalog/129/4168/6546K49,"Multipurpose 6061 Aluminum Rectangular Tube, 1/16"" Wall Thickness, 1/2"" High x 1/2"" Wide, 1 Foot Long",end effector,6546K49,1, $ 5.68 , $ 7.82 , $ 5.68 , $ 14.31 ,verified,yes,,2,EC, $ -   
+DCS,Henry Brunz,https://www.mcmaster.com/8974K28-8974K261/,"1/2in 6061 Aluminum Shaft, 1ft",Suspension bogie shaft (but correct),8974K261,1, $ 2.19 ,, $ 2.19 , $ 2.19 ,verified,yes,,,Science, $ 912.40 
+Science,Matthew Grohal,https://www.mcmaster.com/47065T101-47065T553/,T-Slotted Framing,Science module structure,47065T101,3, $ 6.06 ,, $ 18.18 , $ 18.18 ,verified ,yes,,,,
+Science,Matthew Grohal,https://www.mcmaster.com/47065T236/,Silver Corner Bracket,Science module structure,47065T236,4, $ 7.92 ,, $ 31.68 , $ 31.68 ,verified ,yes,,,,
+Science,Matthew Grohal,https://www.mcmaster.com/8350T89/,Threaded Linear Motion Shaft,Science module structure,8350T89,4, $ 48.05 ,, $ 192.20 , $ 192.20 ,verified ,yes,,,,
+Science,Matthew Grohal,https://www.mcmaster.com/92510A674/,Unthreaded Spacer ,Science module structure,92510A674,8, $ 2.87 ,, $ 22.96 , $ 22.96 ,verified,yes,,,,
+Science,Matthew Grohal,https://www.mcmaster.com/89015k18/,Aluminum Sheet 1/8in 12x12,Science module structure,89015K18,4, $ 37.29 ,, $ 149.16 , $ 149.16 ,verified ,yes,,,,
+Science ,Matthew Grohal,https://www.mcmaster.com/47065T905/,T-Slotted Framing,Science module structure,47065T905,1, $ 7.83 ,, $ 7.83 , $ 7.83 ,verified ,yes,,,,
+Science,Matthew Grohal,https://www.mcmaster.com/1677K4/,Ultra Low Friction Sleeve Bearing ,Science module structure,1677K4,4, $ 1.21 ,, $ 4.84 , $ 4.84 ,verified ,yes,,,,
+Science,Matthew Grohal,https://www.mcmaster.com/6627T38/,Stepper Motor,Drill Linear Drive ,6627T38,1, $ 91.12 ,, $ 91.12 , $ 91.12 ,verified,yes,,,,
+Science,Matthew Grohal,https://www.mcmaster.com/2391N25/,Lead Screw ,Drill Linear Drive ,2391N25,1, $ 69.07 ,, $ 69.07 , $ 69.07 ,verified,yes,,,,
+Science ,Matthew Grohal,https://www.mcmaster.com/2391N11/,Lead Screw Flange Nut ,Drill Linear Drive,2391N11,1, $ 72.16 ,, $ 72.16 , $ 72.16 ,verified ,yes,,,,
+Science,Matthew Grohal,https://www.mcmaster.com/4218T43/,Plastic Bottles ,Liquid Storage ,4218T43,3, $ 2.97 ,, $ 8.91 , $ 8.91 ,verified,yes,,,,
+Science ,Matthew Grohal,https://www.mcmaster.com/1997K35/,Light Bulb,Spectro,1997K35,1, $ 3.07 ,, $ 3.07 , $ 3.07 ,verified ,yes,,,,
+Robo,Hannah Peik,https://www.mcmaster.com/9246K463/,Multipurpose 6061 Aluminum,Base,9246K463,1, $ 12.87 ,, $ 12.87 , $ 12.87 ,verified ,yes,,,,
+Robo,Hannah Peik,https://www.mcmaster.com/89015K259/,Multipurpose 6061 Aluminum Sheet,Base,89015K259,1, $ 21.68 ,, $ 21.68 , $ 21.68 ,verified,yes,,,,
+Science,Matthew Grohal,https://www.mcmaster.com/57745K18/,Flange shaft support,Science Strucutre,57745K18,4, $ 49.62 ,, $ 198.48 , $ 198.48 ,verified,yes,,,,
+Science,Matthew Grohal,https://www.mcmaster.com/89015K28/,1ft x 2ft aluminum sheet,Science Structure ,89015K28,1, $ 63.40 ,, $ 63.40 , $ 63.40 ,verified,yes,,,,
+DCS,Nathaniel Dudko,https://www.mcmaster.com/89015K239/,"Multipurpose 6061 Aluminum Sheet 1/8"" Thick, 8"" x 8""",Main Wheel Plate,89015K239,12, $ 18.65 ,, $ 223.80 , $ 223.80 ,skip,,,,,
+,,,New order,,,,,,, New Order ,,,,,0.00,0.00
+Science,Mika Asfaw,https://www.mcmaster.com/47065T236/,Silver Corner Bracket,Science module structure,47065T236,4, $ 7.92 ,, $ 31.68 , $ 31.68 ,verified,yes,,,,
+Science,Mika Asfaw,https://www.mcmaster.com/47065T101-47065T554/,T-Slotted Framing,Science module structure,47065T101,1, $ 10.24 ,, $ 10.24 , $ 10.24 ,verified,yes,,,,
+Science,Mika Asfaw,https://www.mcmaster.com/47065T101-47065T554/,T-Slotted Framing,Science module structure,47065T554,2, $ 10.24 ,, $ 20.48 , $ 20.48 ,verified,yes,,,,
+,,,New order,,,,,,, New Order ,,,,,0.00,0.00

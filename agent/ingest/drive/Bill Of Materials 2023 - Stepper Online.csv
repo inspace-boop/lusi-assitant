@@ -1,0 +1,7 @@
+Subteam,Member ('@'),Date ,Link,Item Name,Purpose/Location,Item ID #,Quantity,Unit Price,Shipping Cost,Total Price,Order Status,Picked Up?,By Subteam,Total
+,,,,,,,,,,,,,Subteam, Cost 
+Robotic Arm,Ryan Kong,10/30/22,https://www.omc-stepperonline.com/ple-series-planetary-gearbox-gear-ratio-50-1-backlash-20-arc-min-for-6-35mm-shaft-nema-23-stepper-motor-ple23-g50-d6,PLE Series Planetary Gearbox Gear Ratio 50:1 Backlash 20 arc-min for 6.35mm Shaft Nema 23 Stepper Motor,Elbow pitch gearbox,PLE23-G50-D6,1,$66.33,,$66.33,Yes,No,Science, $ -   
+Robotic Arm,Ryan Kong,10/30/22,https://www.omc-stepperonline.com/nema-23-stepper-motor-bipolar-l-56mm-w-gear-ratio-15-1-planetary-gearbox-23hs22-2804s-pg15,Nema 23 Stepper Motor Bipolar L=56mm w/ Gear Ratio 15:1 Planetary Gearbox,Elbow roll motor + gearbox,23HS22-2804S-PG15,1,$56.99,,$56.99,Yes,No,Robotic Arm, $ 123.32 
+,,,,,,,,,,,,,DCS, $ -   
+,,,,,,,,,,,,,Software, $ -   
+,,,,,,,,,,,,,EC, $ -   
