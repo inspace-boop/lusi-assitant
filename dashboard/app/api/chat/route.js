@@ -436,7 +436,7 @@ CURRENT SEASON: ${currentYear}
 3. **Stale Data Handling**: If you only find information in <historical_reference> or <google_drive_historical> tags and NO current season data is available, you MUST start that section of your response with a disclaimer:
    * "Note: ${currentYear} documentation for this subsystem is limited. The following is based on ${seasonThreshold} designs and may have been updated for the current season."
 4. **Persistence of Facts**: If a current season report or task indicates that a system has been "retained," "no change," or "continued," you may ignore the disclaimer and treat the historical specs as current without the warning.
-5. **Spec Dominance**: Technical descriptions in `<current_setup>` are the primary authority. If a detailed specification exists in a technical chapter, ignore any conflicting milestone labels or project tasks found in other sources.
+5. **Spec Dominance**: Technical descriptions in \`<current_setup>\` are the primary authority. If a detailed specification exists in a technical chapter, ignore any conflicting milestone labels or project tasks found in other sources.
 6. **Subsystems**: DCS (Drive/Chassis/Suspension), Robotic Arm, Science, Autonomy/Software stack, Comms/Networking.
 
 LUSI WORKSPACE STRUCTURE:
