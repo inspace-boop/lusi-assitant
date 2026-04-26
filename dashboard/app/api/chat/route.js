@@ -102,13 +102,22 @@ async function classifyQueryIntent(userMessage) {
     max_tokens: 150,
     system: `You are a search query optimizer for a university rover engineering team's Atlassian workspace. 
 Classify the user's query and return ONLY a JSON object with these fields:
-- "searchTerms": 1-2 PRIMARY NOUN KEYWORDS. STRIP ALL CONVERSATIONAL FILLER. 
+- "searchTerms": 1-2 PRIMARY NOUN KEYWORDS. STRIP ALL CONVERSATIONAL FILLER. If multiple terms are generated, separate them by a comma.
   Example: "can you tell me the status of the waveshare board jim ordered?" -> "waveshare board"
 - "prioritize": array of "confluence", "jira", "rules" in priority order.
 - "jiraProjects": array of relevant Jira project keys from ["LP", "AD", "OSP", "URC"].
 - "confluenceSpaces": array of relevant space keys from ["AD", "Osprey", "URC"].
+ 
+If the user mentions a specific date (e.g. "4/17", "April 17", "last Tuesday"), extract that date in both numeric (4/17) and written (April 17) formats and include both in searchTerms (comma separated). For Confluence, generate a title-focused CQL query.
 
-CRITICAL: Return NO text before or after the JSON. Return NO more than 2 searchTerms.
+LUSI SUBSYSTEMS:
+- DCS: Drive, Chassis, Suspension (Mobility)
+- ARM: Robotic Arm, Manipulation
+- SCIENCE: Life detection, payload
+- COMMS: Ubiquiti, communication systems
+- AUTONOMY: Software stack, GNSS, SLAM
+
+CRITICAL: Return NO text before or after the JSON. Return NO more than 2 search terms (unless adding dual date formats).
 
 Classification Examples:
 "what did we go over on 4/19?" -> { "searchTerms": "april 19", "prioritize": ["confluence"], "jiraProjects": ["AD"], "confluenceSpaces": ["AD", "URC"] }
@@ -150,24 +159,25 @@ async function fetchConfluenceExcerpts(query, spaces) {
     
     const domain = process.env.ATLASSIAN_DOMAIN.replace(/^https?:\/\//, '').replace(/\/$/, '');
     const url = new URL(`https://${domain}/wiki/rest/api/content/search`);
-    url.searchParams.append('cql', `(title ~ "${query}" OR text ~ "${query}") AND space IN (${spaces}) ORDER BY lastmodified DESC`);
+    
+    const isDateQuery = /\d{1,2}\/\d{1,2}/.test(query) || /(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\s+\d{1,2}/i.test(query);
+    let cqlCondition;
+    if (isDateQuery) {
+      const terms = query.split(',').map(t => t.trim()).filter(Boolean);
+      cqlCondition = `(${terms.map(t => `title ~ "${t}"`).join(' OR ')})`;
+    } else {
+      cqlCondition = `(title ~ "${query}" OR text ~ "${query}")`;
+    }
+
+    url.searchParams.append('cql', `${cqlCondition} AND space IN (${spaces}) ORDER BY lastmodified DESC`);
     url.searchParams.append('limit', '3'); // Reduced for cost
     url.searchParams.append('expand', 'space,body.view');
 
-    const pinnedCQL = `title IN ("4/19 - Leadership Transition", "EOY Goals", "End of Year Goals", "Leadership Transition") AND space = "URC"`;
-    const pinnedUrl = new URL(`https://${domain}/wiki/rest/api/content/search`);
-    pinnedUrl.searchParams.append('cql', pinnedCQL);
-    pinnedUrl.searchParams.append('limit', '5');
-    pinnedUrl.searchParams.append('expand', 'space,body.view');
-
-    let res, pinnedRes;
+    let res;
     try {
-      [res, pinnedRes] = await Promise.all([
-        fetch(url.toString(), { headers: { 'Authorization': `Basic ${auth}`, 'Accept': 'application/json' } }),
-        fetch(pinnedUrl.toString(), { headers: { 'Authorization': `Basic ${auth}`, 'Accept': 'application/json' } })
-      ]);
+      res = await fetch(url.toString(), { headers: { 'Authorization': `Basic ${auth}`, 'Accept': 'application/json' } });
     } catch (err) {
-      console.error("Fetch parallel error:", err);
+      console.error("Fetch error:", err);
       return '';
     }
     
@@ -178,21 +188,11 @@ async function fetchConfluenceExcerpts(query, spaces) {
     }
     
     let data = await res.json();
-    if (pinnedRes.ok) {
-      const pinnedData = await pinnedRes.json();
-      const combined = [...(data.results || []), ...(pinnedData.results || [])];
-      const seenIds = new Set();
-      data.results = combined.filter(r => {
-        if (!r.id || seenIds.has(r.id)) return false;
-        seenIds.add(r.id);
-        return true;
-      });
-    }
     
     // Fallback: if no results with spaces, try without space filter
     if (data.results && data.results.length === 0) {
       const fallbackUrl = new URL(`https://${domain}/wiki/rest/api/content/search`);
-      fallbackUrl.searchParams.append('cql', `(title ~ "${query}" OR text ~ "${query}") ORDER BY lastmodified DESC`);
+      fallbackUrl.searchParams.append('cql', `${cqlCondition} ORDER BY lastmodified DESC`);
       fallbackUrl.searchParams.append('limit', '3'); // Reduced for cost
       fallbackUrl.searchParams.append('expand', 'space,body.view');
       
@@ -327,13 +327,39 @@ async function queryVectorDb(query) {
     const memRes = await index.namespace('memory').query({ topK: 2, vector: queryVector, includeMetadata: true });
     memoryText = memRes.matches.map(m => `<memory date="${m.metadata.date}" subsystem="${m.metadata.subsystem}" outcome="${m.metadata.outcome}">\nProblem: ${m.metadata.problem}\nSolution: ${m.metadata.solution}\n</memory>`).join('\n');
 
-    // Search SAR reports namespace
-    const sarRes = await index.namespace('sar_reports').query({ topK: 2, vector: queryVector, includeMetadata: true });
-    const sarText = sarRes.matches.map(m => `<sar_report team="${m.metadata.team}" year="${m.metadata.year}" page="${m.metadata.page || 'N/A'}" source="${m.metadata.source || 'Unknown'}" type="${m.metadata.type || 'unknown'}">${m.metadata.text}</sar_report>`).join('\n');
+    const currentYear = process.env.URC_YEAR ? parseInt(process.env.URC_YEAR) : 2026;
 
-    // Search manually ingested Google Drive namespace 
-    const driveRes = await index.namespace('google_drive').query({ topK: 2, vector: queryVector, includeMetadata: true });
-    const driveText = driveRes.matches.map(m => `<google_drive_file filename="${m.metadata.filename}" year="${m.metadata.year}" category="${m.metadata.category}">${m.metadata.text}</google_drive_file>`).join('\n');
+    // Detect Intent
+    const isComparison = /compared to|versus|vs|last year|changes|evolution|since|difference|architecture|what was|how did|2025|2024/i.test(query);
+    const isTimelineQuery = /when|deadline|schedule|timeline|date|finish|complete|margin|milestone/i.test(query);
+    
+    // Search SAR reports namespace with Temporal Tiering & Knowledge Filtering
+    let sarText = "";
+    const sarTopK = isTimelineQuery ? 6 : 12; // Deeper search for technical text
+    
+    const [sarCurr, sarHist] = await Promise.all([
+      index.query({ topK: sarTopK, vector: queryVector, namespace: 'sar_reports', filter: { year: { "$eq": currentYear } }, includeMetadata: true }),
+      index.query({ topK: 5, vector: queryVector, namespace: 'sar_reports', filter: { year: { "$lt": currentYear } }, includeMetadata: true })
+    ]);
+
+    const filterNoise = (matches) => {
+      if (isTimelineQuery) return matches;
+      // For engineering queries, strictly drop visual/gantt noise
+      return matches.filter(m => m.metadata.page_type !== "visual_or_gantt");
+    };
+
+    const currText = filterNoise(sarCurr.matches).map(m => `<current_setup year="${m.metadata.year}" source="${m.metadata.source}" page="${m.metadata.page || 'N/A'}" type="${m.metadata.page_type || 'technical_text'}">${m.metadata.text}</current_setup>`).join('\n');
+    const histText = filterNoise(sarHist.matches).map(m => `<historical_reference year="${m.metadata.year}" source="${m.metadata.source}" type="${m.metadata.page_type || 'technical_text'}">${m.metadata.text}</historical_reference>`).join('\n');
+    sarText = currText + "\n" + histText;
+
+    // Search manually ingested Google Drive namespace (same logic)
+    const [driveCurr, driveHist] = await Promise.all([
+      index.query({ topK: 6, vector: queryVector, namespace: 'google_drive', filter: { year: { "$eq": currentYear } }, includeMetadata: true }),
+      index.query({ topK: 4, vector: queryVector, namespace: 'google_drive', filter: { year: { "$lt": currentYear } }, includeMetadata: true })
+    ]);
+    const dCurrText = driveCurr.matches.map(m => `<google_drive_current file="${m.metadata.filename}" year="${m.metadata.year}">${m.metadata.text}</google_drive_current>`).join('\n');
+    const dHistText = driveHist.matches.map(m => `<google_drive_historical_POTENTIALLY_STALE file="${m.metadata.filename}" year="${m.metadata.year}">${m.metadata.text}</google_drive_historical_POTENTIALLY_STALE>`).join('\n');
+    driveText = dCurrText + "\n" + dHistText;
 
     return { rulesText, memoryText, sarText, driveText };
   } catch(e) {
@@ -365,7 +391,10 @@ export async function POST(request) {
     const intent = await classifyQueryIntent(lastUserMessage);
     console.log('Intent classification result:', JSON.stringify(intent, null, 2));
     
-    const searchTerms = intent.searchTerms;
+    let searchTerms = intent.searchTerms;
+    // Strip years from semantic search terms to prevent biasing against older documents
+    const sanitizedSearchTerms = searchTerms.replace(/202\d/g, '').replace(/\b(last year|previous|current)\b/gi, '').trim() || searchTerms;
+    
     const cacheKey = getCacheKey(searchTerms, intent.jiraProjects, intent.confluenceSpaces);
     
     // Skip cache for Jira (data changes often) or if no intent search terms
@@ -392,16 +421,24 @@ export async function POST(request) {
     const [confluenceData, jiraData, { rulesText, memoryText, sarText, driveText }] = await Promise.all([
       fetchConfluenceExcerpts(searchTerms, confluenceSpaceFilter),
       fetchJiraIssues(searchTerms, jiraProjectFilter),
-      queryVectorDb(searchTerms)
+      queryVectorDb(sanitizedSearchTerms)
     ]);
 
     const currentDate = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
     const currentYear = new Date().getFullYear();
-    const seasonThreshold = currentYear - 1;
-
-    const systemPromptText = `You are the LUSI Rover Assistant — an AI built for the Lehigh University Space Initiative engineering team. LUSI builds a Mars rover to compete in the University Rover Challenge (URC) each year.
+    const seasonThreshold = currentYear - 1;    const systemPromptText = `You are the LUSI Rover Assistant — an AI built for the Lehigh University Space Initiative engineering team. LUSI builds a Mars rover to compete in the University Rover Challenge (URC) each year.
 
 CURRENT DATE: ${currentDate}
+CURRENT SEASON: ${currentYear}
+
+### TEMPORAL INTEGRITY (CRITICAL)
+1. **Priority**: Always prioritize data from the current year (${currentYear}). If ${currentYear} data exists for a subsystem, use it as the definitive "Current Setup."
+2. **Context Tags**: You will receive data in tags like <current_setup> (Priority) and <historical_reference> (Fallback). 
+3. **Stale Data Handling**: If you only find information in <historical_reference> or <google_drive_historical> tags and NO current season data is available, you MUST start that section of your response with a disclaimer:
+   * "Note: ${currentYear} documentation for this subsystem is limited. The following is based on ${seasonThreshold} designs and may have been updated for the current season."
+4. **Persistence of Facts**: If a current season report or task indicates that a system has been "retained," "no change," or "continued," you may ignore the disclaimer and treat the historical specs as current without the warning.
+5. **Spec Dominance**: Technical descriptions in `<current_setup>` are the primary authority. If a detailed specification exists in a technical chapter, ignore any conflicting milestone labels or project tasks found in other sources.
+6. **Subsystems**: DCS (Drive/Chassis/Suspension), Robotic Arm, Science, Autonomy/Software stack, Comms/Networking.
 
 LUSI WORKSPACE STRUCTURE:
 
@@ -430,7 +467,8 @@ Search routing rules:
 - Meeting notes, design specs, documentation, goals, "what did we discuss" → prioritize Confluence URC or AD space
 - Bug reports, action items, assigned tasks → prioritize Jira URC or AD project
 - Old design documents, spreadsheets, BOMs, CAD reference files, budgets, historical records ("old", "previous", "spreadsheet", "BOM", "budget", "historical", "last year") → search archived Google Drive files
-- SAR Reports (System Acceptance Reviews) from LUSI or competitors, competitor benchmarks, "how did we/they do X before" → search SAR reports
+- SAR Reports (System Acceptance Reviews) from LUSI or competitors, competitor benchmarks, "how did we/they do X before" → search SAR reports.
+- Authoritative Source: SAR reports are the primary source of truth for the rover's physical architecture and "what the rover is." Use technical overview pages (1-4) in the SAR to understand subsystem integration, design philosophy, and performance metrics.
 - When unsure, search multiple sources simultaneously. For "BOM" or "last year's design", check both SAR reports and Google Drive.
 
 Your job is to help team members:
@@ -448,7 +486,7 @@ Rules you must follow:
 6. Subsystems you know about: arm, drive train, comms, science payload, power system, autonomy/software stack.
 7. You have access to rules from both the current (${currentYear}) and previous competition years. If a user asks about a rule that has changed between years, explicitly describe the difference.
 8. Important: The <context> block provided in the latest message contains search results ONLY for that specific message. It does not contain context from previous turns. If your previous responses cited valid data that is missing from the current <context> block, DO NOT assume you hallucinated it. Trust that your past citations were based on real search results at that time.
-9. Documentation Safety: If you reference any information (rules, budgets, design specs, or SAR/PDR excerpts) from a previous season (any document with a year of ${seasonThreshold} or earlier), you MUST explicitly mention that this data is historical and may be out-of-date for the current ${currentYear} build, unless the user specifically asked for an "old" or "archived" reference.`;
+9. Quality Preference: When answering technical questions about subsystem design, prioritize [TYPE: technical_text] snippets over [TYPE: visual_or_gantt] snippets. Gantt charts should only be used for timelines and task tracking, not as the primary source for engineering specifications.`;
 
     const contextBlock = `
 <context>
