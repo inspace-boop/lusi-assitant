@@ -337,8 +337,8 @@ async function queryVectorDb(query) {
     const sarTopK = isTimelineQuery ? 6 : 12; // Deeper search for technical text
     
     const [sarCurr, sarHist] = await Promise.all([
-      index.query({ topK: sarTopK, vector: queryVector, namespace: 'sar_reports', filter: { year: { "$eq": currentYear } }, includeMetadata: true }),
-      index.query({ topK: 5, vector: queryVector, namespace: 'sar_reports', filter: { year: { "$lt": currentYear } }, includeMetadata: true })
+      index.namespace('sar_reports').query({ topK: sarTopK, vector: queryVector, filter: { year: { "$eq": currentYear } }, includeMetadata: true }),
+      index.namespace('sar_reports').query({ topK: 5, vector: queryVector, filter: { year: { "$lt": currentYear } }, includeMetadata: true })
     ]);
 
     const filterNoise = (matches) => {
@@ -353,8 +353,8 @@ async function queryVectorDb(query) {
 
     // Search manually ingested Google Drive namespace (same logic)
     const [driveCurr, driveHist] = await Promise.all([
-      index.query({ topK: 6, vector: queryVector, namespace: 'google_drive', filter: { year: { "$eq": currentYear } }, includeMetadata: true }),
-      index.query({ topK: 4, vector: queryVector, namespace: 'google_drive', filter: { year: { "$lt": currentYear } }, includeMetadata: true })
+      index.namespace('google_drive').query({ topK: 6, vector: queryVector, filter: { year: { "$eq": currentYear } }, includeMetadata: true }),
+      index.namespace('google_drive').query({ topK: 4, vector: queryVector, filter: { year: { "$lt": currentYear } }, includeMetadata: true })
     ]);
     const dCurrText = driveCurr.matches.map(m => `<google_drive_current file="${m.metadata.filename}" year="${m.metadata.year}">${m.metadata.text}</google_drive_current>`).join('\n');
     const dHistText = driveHist.matches.map(m => `<google_drive_historical_POTENTIALLY_STALE file="${m.metadata.filename}" year="${m.metadata.year}">${m.metadata.text}</google_drive_historical_POTENTIALLY_STALE>`).join('\n');
@@ -425,7 +425,8 @@ export async function POST(request) {
 
     const currentDate = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
     const currentYear = new Date().getFullYear();
-    const seasonThreshold = currentYear - 1;    const systemPromptText = `You are the LUSI Rover Assistant — an AI built for the Lehigh University Space Initiative engineering team. LUSI builds a Mars rover to compete in the University Rover Challenge (URC) each year.
+    const seasonThreshold = currentYear - 1;
+    const systemPromptText = `You are the LUSI Rover Assistant — an AI built for the Lehigh University Space Initiative engineering team. LUSI builds a Mars rover to compete in the University Rover Challenge (URC) each year.
 
 CURRENT DATE: ${currentDate}
 CURRENT SEASON: ${currentYear}
