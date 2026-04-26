@@ -299,7 +299,6 @@ async function queryVectorDb(query) {
     const queryVector = embedRes.data[0].embedding;
 
     const currentYear = process.env.URC_YEAR ? parseInt(process.env.URC_YEAR) : 2026;
-    const prevYear = currentYear - 1;
 
     // Search rules namespace (Current Year only for cost optimization)
     const rulesResCurrent = await index.namespace('urc_rules').query({ 
@@ -358,7 +357,7 @@ async function queryVectorDb(query) {
     ]);
     const dCurrText = driveCurr.matches.map(m => `<google_drive_current file="${m.metadata.filename}" year="${m.metadata.year}">${m.metadata.text}</google_drive_current>`).join('\n');
     const dHistText = driveHist.matches.map(m => `<google_drive_historical_POTENTIALLY_STALE file="${m.metadata.filename}" year="${m.metadata.year}">${m.metadata.text}</google_drive_historical_POTENTIALLY_STALE>`).join('\n');
-    driveText = dCurrText + "\n" + dHistText;
+    const driveText = dCurrText + "\n" + dHistText;
 
     return { rulesText, memoryText, sarText, driveText };
   } catch(e) {
