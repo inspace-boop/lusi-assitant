@@ -327,7 +327,6 @@ async function queryVectorDb(query) {
     const memRes = await index.namespace('memory').query({ topK: 2, vector: queryVector, includeMetadata: true });
     memoryText = memRes.matches.map(m => `<memory date="${m.metadata.date}" subsystem="${m.metadata.subsystem}" outcome="${m.metadata.outcome}">\nProblem: ${m.metadata.problem}\nSolution: ${m.metadata.solution}\n</memory>`).join('\n');
 
-    const currentYear = process.env.URC_YEAR ? parseInt(process.env.URC_YEAR) : 2026;
 
     // Detect Intent
     const isComparison = /compared to|versus|vs|last year|changes|evolution|since|difference|architecture|what was|how did|2025|2024/i.test(query);
