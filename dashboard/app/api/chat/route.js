@@ -285,7 +285,7 @@ async function queryVectorDb(query) {
   try {
     if (!process.env.PINECONE_API_KEY || !process.env.PINECONE_INDEX) {
       console.warn("Vector DB query skipped: Missing Pinecone env vars.");
-      return { rulesText: '[Rules skipped: Missing Config]', memoryText: '[Memory skipped: Missing Config]' };
+      return { rulesText: '[Rules skipped: Missing Config]', memoryText: '[Memory skipped: Missing Config]', sarText: '', driveText: '', youtubeText: '' };
     }
     const pinecone = new Pinecone({ apiKey: process.env.PINECONE_API_KEY });
     const index = pinecone.index(process.env.PINECONE_INDEX);
@@ -326,23 +326,27 @@ async function queryVectorDb(query) {
     const memRes = await index.namespace('memory').query({ topK: 2, vector: queryVector, includeMetadata: true });
     memoryText = memRes.matches.map(m => `<memory date="${m.metadata.date}" subsystem="${m.metadata.subsystem}" outcome="${m.metadata.outcome}">\nProblem: ${m.metadata.problem}\nSolution: ${m.metadata.solution}\n</memory>`).join('\n');
 
-
     // Detect Intent
     const isComparison = /compared to|versus|vs|last year|changes|evolution|since|difference|architecture|what was|how did|2025|2024/i.test(query);
     const isTimelineQuery = /when|deadline|schedule|timeline|date|finish|complete|margin|milestone/i.test(query);
+    // Detect team/engineering queries that benefit most from video context
+    const isTeamQuery = /lusi|byu|wvu|rose|mit|cu|csm|und|ucf|tamu|ncsu|west virginia|colorado|notre dame|team|presented|presentation|video|spoke|discussed|mentioned|said|explained/i.test(query);
     
     // Search SAR reports namespace with Temporal Tiering & Knowledge Filtering
     let sarText = "";
-    const sarTopK = isTimelineQuery ? 6 : 12; // Deeper search for technical text
+    const sarTopK = isTimelineQuery ? 6 : 12;
     
-    const [sarCurr, sarHist] = await Promise.all([
+    // Search YouTube transcripts namespace — separate from PDFs so they always get a fair shot
+    const ytTopK = isTeamQuery ? 6 : 3;
+    
+    const [sarCurr, sarHist, ytRes] = await Promise.all([
       index.namespace('sar_reports').query({ topK: sarTopK, vector: queryVector, filter: { year: { "$eq": currentYear } }, includeMetadata: true }),
-      index.namespace('sar_reports').query({ topK: 5, vector: queryVector, filter: { year: { "$lt": currentYear } }, includeMetadata: true })
+      index.namespace('sar_reports').query({ topK: 5, vector: queryVector, filter: { year: { "$lt": currentYear } }, includeMetadata: true }),
+      index.namespace('youtube_transcripts').query({ topK: ytTopK, vector: queryVector, includeMetadata: true })
     ]);
 
     const filterNoise = (matches) => {
       if (isTimelineQuery) return matches;
-      // For engineering queries, strictly drop visual/gantt noise
       return matches.filter(m => m.metadata.page_type !== "visual_or_gantt");
     };
 
@@ -350,7 +354,14 @@ async function queryVectorDb(query) {
     const histText = filterNoise(sarHist.matches).map(m => `<historical_reference year="${m.metadata.year}" source="${m.metadata.source}" type="${m.metadata.page_type || 'technical_text'}">${m.metadata.text}</historical_reference>`).join('\n');
     sarText = currText + "\n" + histText;
 
-    // Search manually ingested Google Drive namespace (same logic)
+    // Format YouTube results with timestamp links
+    const youtubeText = (ytRes.matches || []).map(m => {
+      const tsParam = m.metadata.start_time ? `&t=${Math.floor(m.metadata.start_time)}s` : '';
+      const link = `${m.metadata.video_url}${tsParam}`;
+      return `<youtube_clip team="${m.metadata.team}" year="${m.metadata.year}" timestamp="${m.metadata.start_ts || '?'}" subsystems="${m.metadata.subsystems || 'general'}" url="${link}">${m.metadata.text}</youtube_clip>`;
+    }).join('\n');
+
+    // Search manually ingested Google Drive namespace
     const [driveCurr, driveHist] = await Promise.all([
       index.namespace('google_drive').query({ topK: 6, vector: queryVector, filter: { year: { "$eq": currentYear } }, includeMetadata: true }),
       index.namespace('google_drive').query({ topK: 4, vector: queryVector, filter: { year: { "$lt": currentYear } }, includeMetadata: true })
@@ -359,11 +370,11 @@ async function queryVectorDb(query) {
     const dHistText = driveHist.matches.map(m => `<google_drive_historical_POTENTIALLY_STALE file="${m.metadata.filename}" year="${m.metadata.year}">${m.metadata.text}</google_drive_historical_POTENTIALLY_STALE>`).join('\n');
     const driveText = dCurrText + "\n" + dHistText;
 
-    return { rulesText, memoryText, sarText, driveText };
+    return { rulesText, memoryText, sarText, driveText, youtubeText };
   } catch(e) {
     console.error("Vector DB Error", e);
   }
-  return { rulesText: '', memoryText: '', sarText: '', driveText: '' };
+  return { rulesText: '', memoryText: '', sarText: '', driveText: '', youtubeText: '' };
 }
 
 
@@ -416,7 +427,7 @@ export async function POST(request) {
     const jiraProjectFilter = intent.jiraProjects && intent.jiraProjects.length > 0 ? intent.jiraProjects.map(p => `"${p}"`).join(', ') : '"LP", "AD", "OSP", "URC"';
     const confluenceSpaceFilter = intent.confluenceSpaces && intent.confluenceSpaces.length > 0 ? intent.confluenceSpaces.map(s => `"${s}"`).join(', ') : '"AD", "Osprey", "URC"';
 
-    const [confluenceData, jiraData, { rulesText, memoryText, sarText, driveText }] = await Promise.all([
+    const [confluenceData, jiraData, { rulesText, memoryText, sarText, driveText, youtubeText }] = await Promise.all([
       fetchConfluenceExcerpts(searchTerms, confluenceSpaceFilter),
       fetchJiraIssues(searchTerms, jiraProjectFilter),
       queryVectorDb(sanitizedSearchTerms)
@@ -461,6 +472,11 @@ SAR Reports (System Acceptance Reviews):
 - LUSI's own past SAR reports by year
 - Competitor team SAR reports for benchmarking
 
+YouTube Transcripts (video recordings):
+- LUSI and competitor team SAR/PDR presentation videos
+- Each clip is tagged with subsystems discussed and a deep-link timestamp
+- Use these as primary technical sources for competitor rovers if their written SAR report is unavailable. They contain spoken descriptions of their designs.
+
 Search routing rules:
 - Parts, orders, inventory, "did X arrive", "was X bought/ordered/received" → prioritize Jira LP project
 - Meeting notes, design specs, documentation, goals, "what did we discuss" → prioritize Confluence URC or AD space
@@ -468,6 +484,7 @@ Search routing rules:
 - Old design documents, spreadsheets, BOMs, CAD reference files, budgets, historical records ("old", "previous", "spreadsheet", "BOM", "budget", "historical", "last year") → search archived Google Drive files
 - SAR Reports (System Acceptance Reviews) from LUSI or competitors, competitor benchmarks, "how did we/they do X before" → search SAR reports.
 - Authoritative Source: SAR reports are the primary source of truth for the rover's physical architecture and "what the rover is." Use technical overview pages (1-4) in the SAR to understand subsystem integration, design philosophy, and performance metrics.
+- Competitor benchmarking & presentations: If asked about a competitor team (WVU, BYU, etc.), rely heavily on <youtube_transcripts>. These are their public SAR videos and serve as official documentation. Always include the timestamped URL when citing a clip.
 - When unsure, search multiple sources simultaneously. For "BOM" or "last year's design", check both SAR reports and Google Drive.
 
 Your job is to help team members:
@@ -494,6 +511,7 @@ ${jiraData ? `<jira>\n${jiraData}\n</jira>` : ''}
 ${rulesText ? `<urc_rules>\n${rulesText}\n</urc_rules>` : ''}
 ${memoryText ? `<past_solutions>\n${memoryText}\n</past_solutions>` : ''}
 ${sarText ? `<sar_reports>\n${sarText}\n</sar_reports>` : ''}
+${youtubeText ? `<youtube_transcripts>\n${youtubeText}\n</youtube_transcripts>` : ''}
 ${driveText ? `<google_drive>\n${driveText}\n</google_drive>` : ''}
 </context>
 `;

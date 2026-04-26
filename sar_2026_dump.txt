@@ -1,0 +1,753 @@
+ 
+System Acceptance Review 
+Lehigh University Space Initiative  
+        
+ 
+ 
+URC Lead: Ethan Maher, ehm227@lehigh.edu 
+LUSI President: Hannah Peik, hap226@lehigh.edu 
+ 
+ 
+
+1.
+System Overview and Architecture  
+1.1.
+System Description  
+The LUSI 2026 Mars Rover is a modular, highly mobile robotic system designed to execute all of the 
+University Rover Challenge missions. The rover is composed of the following subsystems: Robotic arm, 
+Science, Driveline/Chassis/Suspension (DCS), Electrical, and Software. The 2026 rover builds upon our 
+2025 version, while introducing major new developments, including a new four-wheeled crab-style 
+turning driveline, two new chemical experiments for science, and customized electronics. Our 
+overarching goal this year was to focus on modularity, serviceability, and reliability during competition. 
+1.1.1.
+Driveline, Chassis, Suspension (DCS) 
+LUSIs DCS subsystem is a foundation on which other subsystems depend for mobility and positioning. 
+Therefore, extreme maneuverability was a priority, to be able to situate our robotic arm and science drill 
+at exact locations. The rovers suspension was completely rebuilt with a focus on robustness and 
+adaptability for future missions. After discovering that a four-wheel design was both lighter and more 
+maneuverable than our previous six-wheel design, we decided to develop crab-style 180 degree 
+repositionable wheels for the front half of our suspension. The total weight of the new suspension is 
+lighter than its predecessor. It can execute far tighter turns, and its all-metal CNC-machined and welded 
+construction makes it our most durable suspension yet. To ensure that the suspension can continue to 
+be used for years to come, its highly modular. Simply by repositioning bolts, which can be done quickly 
+in the field, the stance of the suspension can be adjusted through eight different angles, resulting in a 
+longer or shorter wheelbase depending on whether the task at hand calls for stability or rolling over 
+obstacles. The entire suspension uses standardized beams and connections, allowing new parts to be 
+quickly manufactured or swapped. The entire turning apparatus can be removed and the wheels bolted 
+back on in skid-steering configuration, should the crab-turning become undesirable in the future. As a 
+possibility for future improvement, the front wheels are designed to accept shock absorbers.  
+1.1.2.
+Robotic Arm 
+This years robotic arm design focused on improving stability and load handling by replacing our previous 
+rotating base with a linear actuation system, eliminating vibration and increasing stiffness. The actuator 
+now carries much of the load, so that the base motor can use lower gearing while maintaining strength 
+at that joint. The actuator is packaged on a new, smaller module at 3.5 x 8. All joints still operate using 
+Rev Robotics brushless DC motors. The base, shoulder, and elbow use V1.1 motors with 125:1 gearing for 
+high torque, while the wrist uses three Neo 550 motors at 64:1 for controlled motion. The end effector 
+has been simplified to 2-DoF, as the base actuator now provides the yaw motion previously handled at 
+the wrist. It uses two PETG 3D-printed gears for smooth gripping, and this years design upgrades to a 
+metal structure for improved strength and durability. 
+1.1.3.
+Electrical 
+The rovers central architecture is anchored by an NVIDIA Jetson Orin Nano hub that interfaces with 
+secondary Raspberry Pi units via Ethernet and manages the driveline through a CAN-bus interface. 
+Autonomous navigation relies on integrated Adafruit Ultimate GPS for global positioning and an 
+MPU6050 IMU for 6-axis orientation data. A high-gain airMAX 2.4 GHz, 13 dBi omni-directional antenna 
+ensures signal stability in non-line-of-sight conditions. System power is provided by a 12V, 100 Ah LiPo 
+battery and distributed through custom-engineered PCBs made in Altium Designer. These include a 12V 
+distribution board and 5V step-down converter equipped with XT60 connectors for modularity. 
+Individual fuses were placed at each terminal to ensure high levels of safety. Additionally, safety is 
+maintained by a 120A circuit breaker and an emergency stop button for a system wide hard cut.  
+1.1.4.
+Software 
+Our software system is built on a distributed network of computers utilizing Robot Operating System 2 
+(ROS2) as the core architecture for communication. To mirror the modular philosophy of our physical 
+rover, the system is partitioned into vehicle software, a custom ground station, and specialized remote 
+1 
+
+subsystems. The computing architecture is centered around an NVIDIA Jetson Orin Nano, which serves as 
+the primary processing unit for high-demand tasks like camera processing and vision-based navigation. 
+This is supported by a network of Raspberry Pi units dedicated to specific subsystems, including the 
+robotic arm, driveline, and science payload. To ensure rapid iteration and reliability, we have fully 
+adapted our C++ environment to run within Docker containers. This allows us to integrate external 
+libraries and modify our environment without operating system constraints. We utilize a system that 
+synchronizes Docker builds across the fleet. Images are built on the Jetson and propagated to the 
+Raspberry Pi units to ensure version consistency. Our vehicle software supports both manual and 
+autonomous modes. This year, we specifically reworked our hardware interfaces to accommodate the 
+new drivetrain hardware model, providing improved control for the updated steering system. The ground 
+station provides a fully custom GUI environment designed for a smooth, intuitive, and highly informed 
+operating experience, allowing for live monitoring of every rover subsystem. 
+ 
+1.2.
+System Architecture Diagrams 
+ 
+2 
+
+ 
+1.3.
+New and Reused Systems 
+Subteam 
+System 
+New/Reused/Modified? 
+Robotic Arm 
+Robotic Arm Structure 
+Robotic Arm Motors  
+End Effector 
+Module 
+Modified 
+Reused 
+New 
+New 
+Science  
+Soil Collection System 
+Soil Testing and Cache System 
+Module Chassis 
+Modified 
+New 
+New 
+Electrical  
+Custom PCB 
+New 
+DCS 
+Drivetrain Motors  
+Suspension Design 
+Wheels 
+Reused 
+New 
+Reused 
+Software 
+Software Architecture 
+Reused & Expanded 
+ 
+2.
+Integration and Testing 
+LUSI follows a bottom-up approach to system integration, where subsystems are developed, verified, and 
+validated independently before they are integrated with the other subsystems. This reduces integration 
+risk and allows for early identification of incompatibilities and issues. After each subsystem has been 
+fully integrated onto the rover, the project is currently in its final testing phase where we are focusing on 
+run throughs of competition missions and more complicated subsystem test procedures to identify any 
+remaining system problems. Our test plan verifies performance at the component, subsystem, and full 
+system levels. Individual hardware and software elements are tested against requirements, then 
+integrated subsystems are validated for proper interface and functionality. End-to-end system testing 
+confirms complete mission operation, including image capture, onboard processing, and downlink, with 
+simulations and fault testing used to reduce risk prior to deployment. 
+3.
+Project Management 
+3.1.
+Team Organization 
+The LUSI team operates under a subsystem-based organizational structure designed to mirror our rovers 
+system architecture. Weekly leadership meetings ensure alignment across subsystems, while full-team 
+meetings provide progress updates and integration coordination. This system ensures subsystem 
+success, design and deliverable ownership, and efficient integration. Our leadership structure is as 
+follows: 
+ Club President: Overall program management, sponsor and school relations, subsystem 
+integration 
+ VP/URC Team Lead: Design guidance, subsystem coordination, new-member training 
+ Subteam Leads (DCS, Robotic Arm, Electrical, Science, and Software): Responsible for individual 
+subteams, including full design, manufacturing, system integration with rover, and training of 
+new members. Subteams operate semi-independently during development but converge during 
+integration phases. 
+3.2.
+Project Management Approach (January-May 2026) 
+During the second half of the URC cycle, the team transitions from design and development focused 
+work to integration and testing focused activities. The January-May timeline is organized in phases.  
+3.2.1.
+Final Fabrication and Subsystem Validation and Integration (January-February) 
+3 
+
+ Completion of manufacturing for remaining components; Component-level verification; 
+Verification between subsystems/modules 
+ Software validation for robotic arm control and autonomous navigation 
+ Practice runs of delivery and equipment servicing and autonomous waypoint validation; 
+Science sampling validation 
+ Filming and Preparing SAR Submission 
+3.2.2.
+Operational Testing and Iteration (March-April) 
+ Repeated testing of all systems 
+ Timed mission trials 
+ Field mobility testing across variety of terrains 
+ Outreach at Lehigh admissions events and local STEM events 
+3.2.3.
+Final Competition Preparation (April-May) 
+ Endurance Testing 
+ Communications range validation 
+ Travel and Logistics Planning; Spare Parts Preparation 
+3.3.
+Team Training  
+LUSI places a high value on new member engagement and training, subscribing to the philosophy that 
+engineering clubs give students a leg up in skills development and success in industry.  At the start of 
+each year, weekly training sessions are held where new and existing members learn SOLIDWORKS, 
+Altium, C++ ROS, soldering, and more. During our Thursday work meetings, new students can get 
+immediate hands-on experience learning from current members of the club. During Sunday meetings, 
+we focus on progress overviews, planning, and subsystem integration, in addition to typical club design 
+and fabrication work. We prioritize letting members immediately jump in to help, giving them invaluable 
+experience while also progressing the rover faster. As part of the DCS teams new strategy for student 
+development, weve begun training  our members on welding and CNC milling as well. 
+3.4.
+Educational and Public Outreach  
+LUSI engages in a variety of outreach activities, both in the Lehigh and Bethlehem area community, as 
+well as STEM education activities at local schools for grades K-12. We attend all of Lehighs 
+engineering-focused admissions events in order to introduce potential and admitted students to our 
+club, mission, and projects. Additionally, through Lehighs STEM Squad outreach team, we have had the 
+opportunity to present to grade school aged children on why engineering is important, what you can do 
+with it, and what our team does. At a science-fair-like event held for middle school students, we held a 
+booth with design your own satellite and rover activities. For the past four years we have taken part in 
+the Lehigh Valley Space Fest, where we worked to inspire children to learn about space by allowing them 
+to drive our rover, and Boeings Engineering Week, where Boeing engineers and students from nearby 
+colleges discussed and learned about our work. 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+4 
+
+LUSI URC 2025-2026
+Hannah Peik, Ethan Maher
+Fri, 8/1/2025
+ID#
+TASK
+PROGRESS
+START
+END
+DAYS
+Margin
+Jul 28, 2025 Aug 4, 2025 Aug 11, 2025Aug 18, 2025Aug 25, 2025 Sep 1, 2025 Sep 8, 2025 Sep 15, 2025 Sep 22, 2025 Sep 29, 2025 Oct 6, 2025 Oct 13, 2025 Oct 20, 2025 Oct 27, 2025 Nov 3, 2025 Nov 10, 2025Nov 17, 2025Nov 24, 2025 Dec 1, 2025 Dec 8, 2025 Dec 15, 2025Dec 22, 2025Dec 29, 2025 Jan 5, 2026 Jan 12, 2026 Jan 19, 2026 Jan 26, 2026 Feb 2, 2026 Feb 9, 2026 Feb 16, 2026 Feb 23, 2026 Mar 2, 2026 Mar 9, 2026 Mar 16, 2026Mar 23, 2026Mar 30, 2026 Apr 6, 2026 Apr 13, 2026 Apr 20, 2026
+Apr 27, 2026
+28293031 1 2 3 4 5 6 7 8 9 10111213141516171819202122232425262728293031 1 2 3 4 5 6 7 8 9 101112131415161718192021222324252627282930 1 2 3 4 5 6 7 8 9 10111213141516171819202122232425262728293031 1 2 3 4 5 6 7 8 9 101112131415161718192021222324252627282930 1 2 3 4 5 6 7 8 9 10111213141516171819202122232425262728293031 1 2 3 4 5 6 7 8 9 10111213141516171819202122232425262728293031 1 2 3 4 5 6 7 8 9 10111213141516171819202122232425262728 1 2 3 4 5 6 7 8 9 10111213141516171819202122232425262728293031 1 2 3 4 5 6 7 8 9 101112131415161718192021222324252627282930 1
+2
+3
+M T W T F S S M T W T F S S M T W T F S S M T W T F S S M T W T F S S M T W T F S S M T W T F S S M T W T F S S M T W T F S S M T W T F S S M T W T F S S M T W T F S S M T W T F S S M T W T F S S M T W T F S S M T W T F S S M T W T F S S M T W T F S S M T W T F S S M T W T F S S M T W T F S S M T W T F S S M T W T F S S M T W T F S S M T W T F S S M T W T F S S M T W T F S S M T W T F S S M T W T F S S M T W T F S S M T W T F S S M T W T F S S M T W T F S S M T W T F S S M T W T F S S M T W T F S S M T W T F S S M T W T F S S M T W T F S S M T W T F
+S
+S
+1
+General
+75%
+9/1/25
+6/1/26
+274
+N/A
+1.1
+Solidify LUSI Rover Goals
+Complete
+9/1/25
+9/14/25
+14
+1.2
+Train Incoming Members
+Complete
+9/7/25
+9/30/25
+24
+1.3
+Video, Write and Submit SAR
+Complete
+2/1/26
+2/27/26
+27
+1.5
+ Win URC
+Not complete
+5/28/26
+6/1/26
+5
+2
+Electrical
+100%
+9/15/25
+4/1/26
+199
+17
+2.1
+Custom PDB
+Complete
+9/15/25
+11/16/25
+63
+2.1.1 Full requirements complete
+Complete
+9/15/25
+9/28/25
+14
+2.1.2 Schematic complete
+Complete
+9/29/25
+10/12/25
+14
+2.1.3 Complete Layout
+Complete
+10/13/25
+10/26/25
+14
+2.1.4 Complete Product Design
+Complete
+10/27/25
+11/16/25
+21
+2.1.5 Manufacture Product
+Complete
+11/17/25
+1/30/26
+75
+2.2
+Voltage Converters
+Complete
+9/28/25
+11/16/25
+50
+2.2.1 Research Background
+Complete
+9/28/25
+10/5/25
+8
+2.2.2 Develop Schematic
+Complete
+10/6/25
+10/19/25
+14
+2.2.3 LPSpice Simulation
+Complete
+10/12/25
+10/25/25
+14
+2.2.4 KiCad Design
+Complete
+10/26/25
+11/2/25
+8
+2.2.5 Manufacturing and Testing
+Complete
+11/3/25
+2/7/26
+97
+2.3
+Update Full Rover Altium Schematic
+Complete
+10/3/25
+12/15/25
+74
+2.4
+Combine PCB Designs
+Complete
+2/7/26
+2/21/26
+15
+2.5
+3D Modelling and Planning
+Complete
+1/25/26
+2/10/26
+17
+2.6
+Rover Rewiring and Testing
+Complete
+2/22/26
+3/14/26
+21
+2.6
+Schedule Margin
+3/15/26
+3/31/26
+17
+2.7
+ Electrical Subsystem Complete
+Complete
+4/1/26
+4/1/26
+1
+3
+Robotic Arm
+93%
+9/26/25
+5/16/26
+233
+14
+3.1
+CAD & Order New Smaller Chassis
+Complete
+9/26/25
+10/16/25
+3.2
+Mass/Length Measurements
+Complete
+9/26/25
+10/16/25
+21
+3.3
+New Base
+Complete
+9/28/25
+1/31/26
+126
+3.3.1 Design and Order Actuator Base
+Complete
+9/28/25
+11/3/25
+37
+3.3.2 Design and Order Smaller Module
+Complete
+10/1/25
+10/20/25
+20
+3.3.3 Assemble New Base
+Complete
+12/1/25
+1/31/26
+62
+3.4
+New Elbow
+Complete
+11/1/25
+1/31/26
+92
+3.4.1 CAD Elbow Joint
+Complete
+11/1/25
+11/20/25
+20
+3.4.2 Assemble New Elbow
+Complete
+11/21/25
+1/31/26
+72
+3.4.3 Testing
+Complete
+2/1/26
+5/1/26
+90
+3.5
+New End Effector
+Complete
+1/19/26
+2/8/26
+21
+3.5.1 CAD End Effector
+Complete
+1/19/26
+1/25/26
+7
+3.5.2 Manufacture & Integrate End Effector
+Complete
+1/26/26
+2/8/26
+14
+3.6
+Testing and Integration with Software
+Not complete
+2/11/22
+5/1/26
+1541
+3.7
+Schedule Margin
+5/2/26
+5/15/26
+14
+3.8
+ Robotic Arm Module Complete
+Complete
+5/16/26
+5/16/26
+1
+4
+DCS
+80%
+10/1/25
+5/16/26
+228
+14
+4.1
+New Suspension
+Complete
+10/1/25
+12/15/25
+76
+4.1.1 CAD New Suspension
+Complete
+10/1/25
+10/20/25
+20
+4.1.2 Manufacture & Assemble
+Complete
+12/4/25
+12/15/25
+12
+4.2
+New Driveline
+Complete
+10/1/25
+1/31/26
+123
+4.2.1 Design New Steering Mechanism
+Complete
+10/1/25
+10/31/25
+31
+4.2.2 Manufacture Driveline
+Complete
+12/4/25
+1/31/26
+59
+4.3
+Reorganize Chassis
+Complete
+1/19/26
+2/8/26
+21
+4.4
+Testing and Integration
+Complete
+2/9/26
+5/1/26
+82
+4.5
+Design New Wheels (for 2026-27)
+Not complete
+2/1/26
+6/7/26
+127
+4.6
+Schedule Margin
+5/2/26
+5/15/26
+14
+4.7
+ DCS Complete
+Not complete
+5/16/26
+5/16/26
+1
+5
+Science
+88%
+9/1/25
+5/16/26
+258
+14
+5.1
+Update Science Module
+Complete
+9/1/25
+1/23/26
+145
+5.1.1 Redimension Module Chassis
+Complete
+9/1/25
+10/5/25
+35
+5.1.2 Drill and Cut Science Panels
+Complete
+9/25/25
+9/30/25
+6
+5.1.3 Redesign and Test Auger Cover
+Complete
+9/25/25
+10/15/25
+21
+5.2
+New Soil Collection Mechanism
+Complete
+9/25/25
+1/31/26
+129
+5.2.1 CAD New Soil Chamber
+Complete
+9/25/25
+10/21/25
+27
+5.2.2 Design Internal Soil Transporter
+Complete
+10/21/25
+12/15/25
+56
+5.2.3 Manufacture, Integrate, and Test
+Complete
+12/4/25
+1/23/26
+51
+5.3
+Update Electronics
+Complete
+10/1/25
+1/23/26
+115
+5.3.1 Test Electronic Assembly
+Complete
+10/25/25
+1/23/26
+91
+5.3.2 Develop Control Software
+In progress
+9/25/25
+1/23/26
+121
+5.4
+Testing and Integration with Rover
+Complete
+1/24/26
+5/1/26
+98
+5.5
+Schedule Margin
+5/2/26
+5/15/26
+14
+5.6
+ Science Module Complete
+Not complete
+5/16/26
+5/16/26
+1
+6
+Software
+64%
+10/31/25
+5/16/26
+198
+14
+6.1
+Autonomous Control
+In progress
+10/31/25
+4/1/26
+153
+6.1.1 Develop Autonomous Algorithms
+In progress
+10/31/25
+1/31/26
+93
+6.1.2 Integrate with Rover Subsystems
+Complete
+2/1/26
+2/15/26
+15
+6.2
+Update 4WD Driveline Software
+Complete
+9/25/25
+11/15/25
+52
+6.3
+Finalize Robotic Arm Software Control
+In progress
+10/15/25
+2/8/26
+117
+6.4
+Create Code Linter for Organization
+In progress
+1/31/26
+2/28/26
+29
+6.5
+Testing and Bug Fixes
+In progress
+3/1/26
+5/1/26
+62
+6.6
+Schedule Margin
+5/2/26
+5/15/26
+14
+6.7
+ Software Complete
+Not complete
+5/16/26
+5/16/26
+1
+
+5.
+Budget Table 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+6 
+
+6.
+Science Plan (only on page 7) 
+The systems integrated into our science module serve three key functions: analyzing potential 
+soil sample sites, collecting a soil sample of at least 10 cm depth, and analyzing a collected soil sample to 
+determine its suitability for supporting biological life. Built at half the footprint of last year's design, our 
+2025 science module delivers greater precision and capability across every stage of the mission. With 4 
+female square tubing connectors, it supports quick and easy attachment and detachment to our rover 
+chassis. 
+For analyzing soil sample sites, we collect images and footage using a wide-angle 180 panoramic 
+camera and a close-up high-resolution camera, alongside specialized software to analyze stratigraphic 
+profiles and sediment layers. With this footage analysis, we build a hypothesis regarding which site has 
+the greatest potential for supporting microbial life. 
+Our collection platform is driven by a NEO 550 motor along vertically oriented support poles, 
+lowering the auger into position to collect a subsurface sample. A servo-controlled hatch discards surface 
+material above 10 cm depth, and the retained soil transfers into our testing chamber, which doubles as 
+our sample cache. 
+Once an adequate sample is in the testing chamber, we begin analyzing it to determine its 
+likelihood of carrying microbial life. A load cell verifies that more than 5g has been collected. A 7-in-1 soil 
+probe measures nitrogen, phosphorus, potassium, pH, electrical conductivity, temperature, and 
+moisture. We then perform two chemical experiments, each using a pre-loaded testing vial into which 
+the collected soil is introduced. 
+The Biuret test detects peptide bonds by reacting copper(II) ions in an alkaline solution with the 
+nitrogen atoms in peptide linkages, producing a visible color shift from blue to violet. This confirms the 
+presence of proteins and polypeptides, which are only produced by living or once-living organisms. The 
+Benedict's test heats the sample with a copper-based alkaline reagent, causing any reducing sugars 
+present to donate electrons to the copper ions, shifting the solution from blue through green, yellow, 
+and orange depending on sugar concentration. Reducing sugars persist in soil even after proteins have 
+degraded, broadening our detection window for past biological activity. Both color changes are 
+quantified using our custom-built spectrophotometer, which measures absorbance at specific 
+wavelengths corresponding to the reaction products of each test, interpreted against lab-developed 
+calibration curves to generate a data-driven hypothesis about the presence of microbial life in our 
+sample. 
+To ensure safety, we transport all chemicals in lab-grade sealed containers, integrate safety 
+measures within our module to guarantee no chemical spillage, and dispose of all chemicals and treated 
+soil at Lehigh's Biolabs. 
+7 

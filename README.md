@@ -47,12 +47,12 @@ The AI agent uses a unified ingestion system located in the `agent/` directory.
    - `sar/`: Team SAR reports (e.g., `LUSI_SAR_2025.pdf`)
    - `drive/`: Archived Drive files (e.g., `BOM_2024.pdf`)
 2. Run the ingester:
-   `python agent/ingest.py`
+   `py agent/ingest.py`
 3. Processed files will be moved to `agent/ingest/processed/` automatically.
 
 ### 2. YouTube Ingestion (Transcripts)
 For SAR presentation videos, use the dedicated CLI:
-`python agent/ingest_youtube.py --url [URL] --team [TEAM] --year [YEAR]`
+`py agent/ingest_youtube.py --url [URL] --team [TEAM] --year [YEAR]`
 
 ---
 
